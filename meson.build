@@ -3,7 +3,11 @@ project('jzip', 'c', version : '2.1', license : 'ModifiedBSD')
 cc = meson.get_compiler('c')
 
 link_args = []
-compile_args = ['-DPOSIX', '-DHAVE_GETOPT', '-DHARD_COLORS']
+compile_args = ['-DPOSIX', '-DHARD_COLORS']
+
+if cc.get_id() != 'msvc'
+  compile_args += '-DHAVE_GETOPT'
+endif
 
 lib_src = files([
   'control.c', 'extern.c', 'fileio.c', 'input.c', 'interpre.c',
