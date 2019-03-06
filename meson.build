@@ -5,10 +5,6 @@ cc = meson.get_compiler('c')
 link_args = []
 compile_args = ['-DPOSIX', '-DHARD_COLORS']
 
-if cc.get_id() != 'msvc'
-  compile_args += '-DHAVE_GETOPT'
-endif
-
 lib_src = files([
   'control.c', 'extern.c', 'fileio.c', 'input.c', 'interpre.c',
   'license.c', 'math.c', 'memory.c', 'object.c', 'operand.c', 'osdepend.c',
@@ -23,6 +19,12 @@ if host_machine.system() == 'windows'
 else
   lib_src += 'unixio.c'
   link_args += '-ltermcap'
+endif
+
+if cc.get_id() != 'msvc'
+  compile_args += '-DHAVE_GETOPT'
+else
+  lib_src += 'getopt.c'
 endif
 
 jzip_lib = static_library('jzip',
