@@ -171,6 +171,11 @@ void z_erase_window( zword_t w )
 
    if ( ( zbyte_t ) w == ( zbyte_t ) Z_SCREEN )
    {
+      z_split_window(0);
+      clear_screen(  );
+   }
+   if ( ( zbyte_t ) w == ( zbyte_t ) -2 )
+   {
       clear_screen(  );
    }
    else if ( ( zbyte_t ) w == TEXT_WINDOW )

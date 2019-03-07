@@ -143,6 +143,10 @@ int interpret(  )
                   z_restore_undo(  );
                   break;
 
+               case 0x0c:
+                  store_operand( 0 );
+                  break;
+
                default:
                   fatal( "interpret(): Illegal extended operand instruction" );
             }
