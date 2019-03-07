@@ -1094,6 +1094,27 @@ static int read_key( int mode )
             tputs( TE, 1, outc );
             exit( 0 );
          }                      /* CTRL-D (EOF) */
+         else if (c == 27)
+         {
+            c = getchar( );
+            if ( c != '[' )
+            {
+               ungetc( c, stdin );
+               c = 27;
+               continue;
+            }
+            c = getchar( );
+            switch ( c )
+            {
+                case 'A': return 0x81;
+                case 'B': return 0x82;
+                case 'C': return 0x84;
+                case 'D': return 0x83;
+                default:
+                   ungetc( c, stdin );
+                   c = '[';
+            }
+         }                      /* Cursor keys */
       }
       while ( !( c == 10 || c == 13 || c == 8 ) && ( c < 32 || c > 127 ) );
    }
