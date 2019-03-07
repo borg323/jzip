@@ -2,7 +2,7 @@ project('jzip', 'c', version : '2.1', license : 'ModifiedBSD')
 
 cc = meson.get_compiler('c')
 
-link_args = []
+deps = []
 compile_args = ['-DPOSIX', '-DHARD_COLORS']
 
 lib_src = files([
@@ -17,8 +17,8 @@ if host_machine.system() == 'windows'
   headers += files('conio2.h')
   compile_args += '-DLOUSY_RANDOM'
 else
+  deps += cc.find_library('termcap', required : true)
   lib_src += 'unixio.c'
-  link_args += '-ltermcap'
 endif
 
 if cc.get_id() != 'msvc'
@@ -35,19 +35,19 @@ incdir = include_directories('.')
 
 jzip_dep = declare_dependency(
   link_with : jzip_lib,
-  link_args : link_args,
+  dependencies : deps,
   include_directories : incdir)
 
 jzip = executable('jzip',
   'jzip.c',
   c_args: compile_args,
   link_with : jzip_lib,
-  link_args : link_args,
+  dependencies : deps,
   include_directories : incdir)
 
 ckifzs = executable('ckifzs',
   'ckifzs.c',
-  c_args: compile_args,
-  link_args : link_args,
+  link_with : jzip_lib,
+  dependencies : deps,
   include_directories : incdir)
 
