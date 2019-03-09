@@ -476,7 +476,7 @@ void z_copy_table( zword_t src, zword_t dst, zword_t count )
       while ( count++ )
          z_storeb( dst++, 0, read_data_byte( &address ) );
    }
-   else
+   else if ( src < dst )
    {
       address += ( unsigned long ) count;
       dst += count;
@@ -485,6 +485,13 @@ void z_copy_table( zword_t src, zword_t dst, zword_t count )
          address--;
          z_storeb( --dst, 0, read_data_byte( &address ) );
          address--;
+      }
+   }
+   else
+   {
+      while ( count-- )
+      {
+         z_storeb( dst++, 0, read_data_byte( &address ) );
       }
    }
 
