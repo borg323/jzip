@@ -78,11 +78,25 @@ void z_mul( zword_t a, zword_t b )
 
 void z_div( zword_t a, zword_t b )
 {
-   /* The magic rule is: round towards zero. */
+   /* The magic rule is: round towards zero. C99 mandates this. */
    ZINT16 sa = ( ZINT16 ) a;
    ZINT16 sb = ( ZINT16 ) b;
    ZINT16 res;
 
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+   if ( sb == 0 )
+   {
+#ifdef STRICTZ
+      report_strictz_error( STRZERR_DIV_ZERO,
+                            "@div attempted with a divisor of zero.  Result set to 32767 (0x7fff)." );
+#endif
+      res = 32767;
+   }
+   else
+   {
+      res = sa / sb;
+   }
+#else
    if ( sb < 0 )
    {
       sa = -sa;
@@ -104,6 +118,8 @@ void z_div( zword_t a, zword_t b )
    {
       res = -( ( -sa ) / ( sb ) );
    }
+#endif
+
    store_operand( res );
 
 }
