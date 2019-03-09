@@ -489,9 +489,13 @@ void z_print_table( int argc, zword_t * argv )
 {
    unsigned long address;
    unsigned int width, height;
-   unsigned int row, column;
+   int row, column;
+   int old_formatting = formatting;
 
    /* Supply default arguments */
+
+   if ( argc < 4 )
+      argv[3] = 0;
 
    if ( argc < 3 )
       argv[2] = 1;
@@ -503,7 +507,9 @@ void z_print_table( int argc, zword_t * argv )
 
    /* Get coordinates of top left corner of rectangle */
 
-   get_cursor_position( ( int * ) &row, ( int * ) &column );
+   get_cursor_position( &row, &column );
+
+   formatting=OFF;
 
    address = argv[0];
 
@@ -513,7 +519,9 @@ void z_print_table( int argc, zword_t * argv )
    {
 
       for ( width = 0; width < argv[1]; width++ )
-         write_char( read_data_byte( &address ) );
+         write_zchar( read_data_byte( &address ) );
+
+      address += argv[3];
 
       /* Put cursor back to lefthand side of rectangle on next line */
 
@@ -521,6 +529,8 @@ void z_print_table( int argc, zword_t * argv )
          move_cursor( ++row, column );
 
    }
+
+   formatting = old_formatting;
 
 }                               /* z_print_table */
 
