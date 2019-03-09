@@ -689,6 +689,7 @@ void z_set_text_style( zword_t mode )
 {
    if ( mode >= MIN_ATTRIBUTE  && mode <= MAX_ATTRIBUTE )
    {
+      flush_buffer( FALSE );
       set_attribute( mode );
    }
    else
