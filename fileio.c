@@ -747,10 +747,18 @@ void z_restore_undo( void )
    if ( undo_datap != NULL )
    {
       /* If no undo save done then return an error */
-      if ( undo_valid == TRUE )
+      if ( undo_valid != FALSE )
       {
          /* Restore the undo data and return success */
          save_restore( NULL, UNDO_RESTORE );
+#ifdef PRAXIX
+         if (undo_valid == -1)
+         {
+            store_operand( 0 );
+            return;
+         }
+         undo_valid = -1;
+#endif
          store_operand( 2 );
       }
       else
