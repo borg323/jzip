@@ -503,7 +503,7 @@ void z_loadw( zword_t addr, zword_t offset )
 
    /* Calculate word array index address */
 
-   address = addr + ( offset * 2 );
+   address = ( zword_t ) ( addr + ( offset * 2 ) );
 
    /* Store the byte */
 
@@ -524,7 +524,7 @@ void z_loadb( zword_t addr, zword_t offset )
 
    /* Calculate byte array index address */
 
-   address = addr + offset;
+   address = ( zword_t ) ( addr + offset );
 
    /* Load the byte */
 
