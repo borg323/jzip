@@ -1359,22 +1359,22 @@ int codes_to_text( int c, char *s )
    if ( c > 154 && c < 224 )
    {
       s[0] = zscii2latin1[c - 155];
-
-      if ( c == 220 )
+      s[1] = '\0';
+      if ( formatting == ON )
       {
-         s[1] = 'e';
-         s[2] = '\0';
+         if ( c == 220 )
+         {
+            s[0] = 'o';
+            s[1] = 'e';
+            s[2] = '\0';
+         }
+         else if ( c == 221 )
+         {
+            s[0] = 'O';
+            s[1] = 'E';
+            s[2] = '\0';
+         }
       }
-      else if ( c == 221 )
-      {
-         s[1] = 'E';
-         s[2] = '\0';
-      }
-      else
-      {
-         s[1] = '\0';
-      }
-
       return 0;
    }
 
