@@ -745,7 +745,7 @@ void display_char( int );
 int fit_line( const char *, int, int );
 void get_cursor_position( int *, int * );
 void initialize_screen( void );
-int input_line( int, char *, int, int * );
+int input_line( int, char *, int, int *, int );
 void move_cursor( int, int );
 int print_status( int, char *[] );
 void reset_screen( void );

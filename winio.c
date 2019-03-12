@@ -533,7 +533,7 @@ void add_command( char *buffer, int size )
 
 }                               /* add_command */
 
-int input_line( int buflen, char *buffer, int timeout, int *read_size )
+int input_line( int buflen, char *buffer, int timeout, int *read_size, int start_col )
 {
    int c, col;
    int init_char_pos, curr_char_pos;
@@ -564,9 +564,10 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size )
     }
 */
    get_cursor_position( &row, &col );
-   head_col = tail_col = col;
+   head_col = start_col;
+   tail_col = start_col + *read_size;
 
-   init_char_pos = curr_char_pos = *read_size;
+   init_char_pos = curr_char_pos = col - start_col;
 
    ptr1 = ptr2 = end_ptr;
 

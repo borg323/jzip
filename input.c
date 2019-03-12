@@ -208,6 +208,7 @@ int get_line( char *cbuf, zword_t timeout, zword_t action_routine )
    char *buffer;
    int buflen, read_size, status, c;
    zword_t arg_list[2];
+   int row, col, prev_col, start_col;
 
    /* Set maximum buffer size to width of screen minus any
     * right margin and 1 character for a terminating NULL */
@@ -245,13 +246,31 @@ int get_line( char *cbuf, zword_t timeout, zword_t action_routine )
       arg_list[1] = 0;          /*  as per spec.1.0  */
       /* arg_list[1] = timeout/10; */
 
+      get_cursor_position( &row, &col );
+      start_col = col - read_size;
+      prev_col = col;
+
       /* Read a line with a timeout. If the input timed out then
        * call the timeout action routine. If the return status from the
        * timeout routine was 0 then try to read the line again */
 
       do
       {
-         c = input_line( buflen, buffer, timeout, &read_size );
+         get_cursor_position( &row, &col );
+         if (col != start_col + read_size)
+         {
+            int i;
+            for (i = 0; i < read_size; i++ )
+               write_char( buffer[i] );
+            flush_buffer( FALSE );
+         }
+         move_cursor( row, prev_col );
+         c = input_line( buflen, buffer, timeout, &read_size, start_col );
+         if ( c == -1)
+         {
+            get_cursor_position( &row, &prev_col );
+            move_cursor( row, start_col + read_size );
+         }
          status = 0;
       }
       while ( c == -1 && ( status = z_call( 1, arg_list, ASYNC ) ) == 0 );

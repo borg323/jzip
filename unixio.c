@@ -109,7 +109,7 @@ void get_first_command(  );
 void delete_command(  );
 void add_command( char *, int );
 int display_command( char * );
-int input_line( int, char *, int, int * );
+int input_line( int, char *, int, int *, int );
 int input_character( int );
 static int wait_for_char( int );
 
@@ -754,7 +754,7 @@ void add_command( char *buffer, int size )
 }                               /* add_command */
 
 
-int input_line( int buflen, char *buffer, int timeout, int *read_size )
+int input_line( int buflen, char *buffer, int timeout, int *read_size, int start_col )
 {
    struct timeval tv;
    struct timezone tz;
@@ -773,9 +773,10 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size )
     */
 
    get_cursor_position( &row, &col );
-   head_col = tail_col = col;
+   head_col = start_col;
+   tail_col = start_col + *read_size;
 
-   init_char_pos = curr_char_pos = *read_size;
+   init_char_pos = curr_char_pos = col - start_col;
 
    ptr1 = ptr2 = end_ptr;
 
@@ -937,6 +938,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size )
                if ( c == '\r' || c == '\n' )
                {
                   c = '\n';
+                  move_cursor( row, tail_col );
                   scroll_line(  );
                }
 
