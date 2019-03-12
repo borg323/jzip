@@ -799,26 +799,20 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size )
 
       if ( keypad_avail )
       {
-         if ( c == ( char ) *KU )
-         {
+         if ( c == 0x81 )
+         {                   /* Up arrow */
+            get_prev_command(  );
+            curr_char_pos = *read_size = display_command( buffer );
+            tail_col = head_col + *read_size;
             keyfunc = 1;
-            for ( loop = 0; loop < ( strlen( KU ) - 1 ); loop++ )
-               c = getchar(  );
-
-            if ( c == ( unsigned char ) KU[strlen( KU ) - 1] )
-            {                   /* Up arrow */
-               get_prev_command(  );
-               curr_char_pos = *read_size = display_command( buffer );
-               tail_col = head_col + *read_size;
-               keyfunc = 1;
-            }
-            else if ( c == ( unsigned char ) KD[strlen( KU ) - 1] )
-            {                   /* Down arrow */
-               get_next_command(  );
-               curr_char_pos = *read_size = display_command( buffer );
-               tail_col = head_col + *read_size;
-               keyfunc = 1;
-            }
+         }
+         else if ( c == 0x82 )
+         {                   /* Down arrow */
+            get_next_command(  );
+            curr_char_pos = *read_size = display_command( buffer );
+            tail_col = head_col + *read_size;
+            keyfunc = 1;
+         }
 
 /* PgUp
           else if (c == (unsigned char) '\x09a') { 
@@ -840,32 +834,32 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size )
 
          /****** Cursor Editing Keys ******/
 
-            else if ( c == ( unsigned char ) KL[strlen( KL ) - 1] )
-            {                   /* Left arrow */
-               get_cursor_position( &row, &col );
+         else if ( c == 0x83 )
+         {                   /* Left arrow */
+            get_cursor_position( &row, &col );
 
-               /* Prevents moving the cursor into the prompt */
+            /* Prevents moving the cursor into the prompt */
 
-               if ( col > head_col )
-               {
-                  move_cursor( row, --col );
-                  curr_char_pos--;
-               }
-               keyfunc = 1;
+            if ( col > head_col )
+            {
+               move_cursor( row, --col );
+               curr_char_pos--;
             }
-            else if ( c == ( unsigned char ) KR[strlen( KR ) - 1] )
-            {                   /* Right arrow */
-               get_cursor_position( &row, &col );
+            keyfunc = 1;
+         }
+         else if ( c == 0x84 )
+         {                   /* Right arrow */
+            get_cursor_position( &row, &col );
 
-               /* Prevents moving the cursor beyond the end of the input line */
+            /* Prevents moving the cursor beyond the end of the input line */
 
-               if ( col < tail_col )
-               {
-                  move_cursor( row, ++col );
-                  curr_char_pos++;
-               }
-               keyfunc = 1;
+            if ( col < tail_col )
+            {
+               move_cursor( row, ++col );
+               curr_char_pos++;
             }
+            keyfunc = 1;
+         }
 
 /* End
          else if (c == (unsigned char) '\x092') {  
@@ -908,7 +902,6 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size )
             }
          }
  */
-         }
       }
       if ( !keyfunc )
       {
@@ -1076,72 +1069,41 @@ static int wait_for_char( int timeout )
 
 }                               /* wait_for_char */
 
+/* mode == EXTENDED may be used for home/end etc */
 static int read_key( int mode )
 {
-   int c;
+   char in[80];
+   int ct;
 
-   if ( mode == PLAIN )
+   do
    {
-      do
-      {
-         c = getchar(  );
-         if ( c == 4 )
-         {
-            delete_status_window(  );
-            select_text_window(  );
-            set_attribute( NORMAL );
-            set_cbreak_mode( 0 );
-            tputs( TE, 1, outc );
-            exit( 0 );
-         }                      /* CTRL-D (EOF) */
-         else if (c == 27)
-         {
-            c = getchar( );
-            if ( c != '[' )
-            {
-               ungetc( c, stdin );
-               c = 27;
-               continue;
-            }
-            c = getchar( );
-            switch ( c )
-            {
-                case 'A': return 0x81;
-                case 'B': return 0x82;
-                case 'C': return 0x84;
-                case 'D': return 0x83;
-                default:
-                   ungetc( c, stdin );
-                   c = '[';
-            }
-         }                      /* Cursor keys */
-      }
-      while ( !( c == 10 || c == 13 || c == 8 ) && ( c < 32 || c > 127 ) );
-   }
-   else if ( mode == EXTENDED )
-   {                            /* also pass ESC character back for editor */
-      do
-      {
-         c = getchar(  );
-         if ( c == 4 )
-         {
-            delete_status_window(  );
-            select_text_window(  );
-            set_attribute( NORMAL );
-            set_cbreak_mode( 0 );
-            tputs( TE, 1, outc );
-            exit( 0 );
-         }                      /* CTRL-D (EOF) */
-      }
-      while ( !( c == 27 || c == 10 || c == 13 || c == 8 ) && ( c < 32 || c > 127 ) );
-   }
+      ct = read( fileno( stdin ), in, 79 );
 
-   if ( c == 127 )
-      c = '\b';
-   else if ( c == 10 )
-      c = 13;
+      if ( ct == 1 && in[0] == 4 )
+      {
+         delete_status_window(  );
+         select_text_window(  );
+         set_attribute( NORMAL );
+         set_cbreak_mode( 0 );
+         tputs( TE, 1, outc );
+         exit( 0 );
+      }                      /* CTRL-D (EOF) */
+      else if ( in[0] == KU[0] && in[ct-1] == KU[strlen(KU)-1] )
+          return 0x81;
+      else if ( in[0] == KD[0] && in[ct-1] == KD[strlen(KD)-1] )
+          return 0x82;
+      else if ( in[0] == KL[0] && in[ct-1] == KL[strlen(KL)-1] )
+          return 0x83;
+      else if ( in[0] == KR[0] && in[ct-1] == KR[strlen(KR)-1] )
+          return 0x84;       /* Cursor keys */
+      else if ( ct == 1 && in[0] == 127 )
+          return '\b';
+      else if ( ct == 1 && in[0] == 10 )
+          return 13;
+   }
+   while ( ct > 1 || ( !( in[0] == 13 || in[0] == 8 || in[0] == 27 ) && ( in[0] < 32 || in[0] > 127 ) ) );
 
-   return ( c );
+   return ( in[0] );
 
 }                               /* read_key */
 

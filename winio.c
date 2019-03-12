@@ -871,7 +871,7 @@ int timed_read_key( int timeout )
       else
       {
          c = read_key(  );
-         if ( c > 31 || c == 8 || c == 13 )
+         if ( c > 31 || c == 8 || c == 13 || c == 27)
          {
             return ( c );
          }
@@ -885,7 +885,7 @@ int read_key( void )
 
  read_key_top:
    c = getch(  );
-   if ( c < 32 && !( c == 0 || c == 8 || c == 13 ) )
+   if ( c < 32 && !( c == 0 || c == 8 || c == 13 || c == 27) )
       goto read_key_top;
 
    if ( c != '\0' && c != ( unsigned char ) '\x0e0' )
