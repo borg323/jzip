@@ -935,6 +935,7 @@ void scroll_line( void )
    int row, col;
 
    get_cursor_position( &row, &col );
+   clear_line();
    gettextinfo( &ti );
    if ( row == ti.screenheight )
       movetext (1, status_size + 2, ti.screenwidth, ti.screenheight, 1, status_size+1);
