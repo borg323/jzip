@@ -467,9 +467,13 @@ void output_new_line( void )
          }
       }
       else
+      {
          /* If this is the status window then just output a new line */
 
-         output_char( '\n' );
+         get_cursor_position( &row, &col );
+         if ( row < screen_rows )
+            output_char( '\n' );
+      }
    }
 
 }                               /* output_new_line */
