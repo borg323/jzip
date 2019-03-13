@@ -14,11 +14,11 @@
  *
  */
 
-#include "ztypes.h"
-
 #include <windows.h>
 #include <conio.h>
 #define cputs _cputs
+
+#include "ztypes.h"
 
 #include <time.h>
 #include <sys/types.h>
