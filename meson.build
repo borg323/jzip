@@ -13,8 +13,7 @@ lib_src = files([
 headers = files(['ztypes.h', 'jzip.h'])
 
 if host_machine.system() == 'windows'
-  lib_src += ['winio.c', 'conio.c']
-  headers += files('conio2.h')
+  lib_src += 'winio.c'
   compile_args += '-DLOUSY_RANDOM'
 else
   deps += cc.find_library('termcap', required : true)

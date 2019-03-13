@@ -1,16 +1,27 @@
 /*
  * winio.c
  *
- * Borland C compatible screen I/O routines for Windows.
+ * Screen I/O routines for Windows.
+ *
+ * Based on bccio.c (c) 2000 John Holder
+ *
+ * Including public domain code from conio21
+ * (https://sourceforge.net/projects/conio/) written by:
+ * Hongli Lai <hongli@telekabel.nl>
+ * tkorrovi <tkorrovi@altavista.net> on 2002/02/26.
+ * Andrew Westcott <ajwestco@users.sourceforge.net>
+ * Michal Molhanec <michal@molhanec.net>
  *
  */
 
 #include "ztypes.h"
-#include "conio2.h"
+
+#include <windows.h>
+#include <conio.h>
+#define cputs _cputs
 
 #include <time.h>
 #include <sys/types.h>
-
 
 #define BLACK 0
 #define BLUE 1
@@ -21,13 +32,11 @@
 #define BROWN 6
 #define WHITE 7
 
-
 #define BRIGHT 0x08
+static unsigned short emphasis = BRIGHT;
 
-/* below was 0x10 */
-#define FLASH 0x80
-
-//static unsigned char prevmode;
+static DWORD prevmode;
+static unsigned short prevattr;
 static int win_cursor_on = 1;
 static int screen_started = FALSE;
 static int cursor_saved = OFF;
@@ -57,7 +66,14 @@ static int display_command( char * );
 
 void initialize_screen( void )
 {
-   struct text_info ti;
+   CONSOLE_SCREEN_BUFFER_INFO info;
+   int screenheight, screenwidth;
+
+   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+   screenwidth  = info.srWindow.Right - info.srWindow.Left + 1;
+   screenheight = info.srWindow.Bottom - info.srWindow.Top + 1;
+
+   prevattr = info.wAttributes;
 
 #if 0
    gettextinfo( &ti );
@@ -73,13 +89,20 @@ void initialize_screen( void )
    }
 #endif
 
-   gettextinfo( &ti );
+   GetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), &prevmode);
+   if ( SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), ENABLE_PROCESSED_OUTPUT | 0x0010 /*ENABLE_LVB_GRID_WORLDWIDE*/) )
+   {
+      emphasis = COMMON_LVB_UNDERSCORE;
+   }
+   else
+   {
+      SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), ENABLE_PROCESSED_OUTPUT);
+   }
+
    if ( screen_rows == 0 )
-      screen_rows = ti.screenheight;
+      screen_rows = screenheight;
    if ( screen_cols == 0 )
-      screen_cols = ti.screenwidth;
-//   window( 1, 1, screen_cols, screen_rows );
-//   _wscroll = 0;
+      screen_cols = screenwidth;
 
    if ( monochrome )
       default_bg = 0;           /* black */
@@ -163,7 +186,10 @@ void reset_screen( void )
       ( void ) read_key(  );
       output_new_line(  );
 //      textmode( prevmode );
-      normvideo();
+      SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), prevmode);
+      SetConsoleTextAttribute (GetStdHandle(STD_OUTPUT_HANDLE), prevattr);
+      current_fg = prevattr & 0xf;
+      current_bg = prevattr >> 4;
       clear_screen(  );
    }
    screen_started = FALSE;
@@ -172,7 +198,23 @@ void reset_screen( void )
 
 void clear_screen( void )
 {
-   clrscr(  );
+   DWORD written;
+   int i;
+   CONSOLE_SCREEN_BUFFER_INFO info;
+
+   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+
+   for (i = info.srWindow.Top; i < info.srWindow.Bottom + 1; i++) {
+      FillConsoleOutputAttribute (GetStdHandle (STD_OUTPUT_HANDLE),
+        current_fg + (current_bg << 4), info.srWindow.Right - info.srWindow.Left + 1,
+        (COORD) {info.srWindow.Left, i},
+        &written);
+      FillConsoleOutputCharacter (GetStdHandle(STD_OUTPUT_HANDLE), ' ',
+        info.srWindow.Right - info.srWindow.Left + 1,
+        (COORD) {info.srWindow.Left, i},
+        &written);
+   }
+   SetConsoleCursorPosition (GetStdHandle(STD_OUTPUT_HANDLE), (COORD) {info.srWindow.Left, info.srWindow.Top});
 
 }                               /* clear_screen */
 
@@ -191,7 +233,9 @@ void select_status_window( void )
    save_cursor_position(  );
    if ( !win_cursor_on )
    {
-      _setcursortype( _NOCURSOR );
+      CONSOLE_CURSOR_INFO Info;
+      Info.bVisible = FALSE;
+      SetConsoleCursorInfo (GetStdHandle (STD_OUTPUT_HANDLE), &Info);
    }
 
 }                               /* select_status_window */
@@ -200,7 +244,10 @@ void select_text_window( void )
 {
    if ( !win_cursor_on )
    {
-      _setcursortype( _NORMALCURSOR );
+      CONSOLE_CURSOR_INFO Info;
+      Info.dwSize = 20;
+      Info.bVisible = TRUE;
+      SetConsoleCursorInfo (GetStdHandle (STD_OUTPUT_HANDLE), &Info);
    }
    restore_cursor_position(  );
 
@@ -208,60 +255,75 @@ void select_text_window( void )
 
 void clear_line( void )
 {
-   clreol(  );
+    DWORD written;
+    CONSOLE_SCREEN_BUFFER_INFO info;
 
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+
+    FillConsoleOutputAttribute (GetStdHandle (STD_OUTPUT_HANDLE),
+      current_fg + (current_bg << 4),
+      info.srWindow.Right - info.dwCursorPosition.X + 1, info.dwCursorPosition, &written);
+    FillConsoleOutputCharacter (GetStdHandle (STD_OUTPUT_HANDLE),
+      ' ', info.srWindow.Right - info.dwCursorPosition.X + 1, info.dwCursorPosition, &written);
+
+    SetConsoleCursorPosition (GetStdHandle(STD_OUTPUT_HANDLE), info.dwCursorPosition);
 }                               /* clear_line */
 
 void clear_text_window( void )
 {
-   struct text_info ti;
+   CONSOLE_SCREEN_BUFFER_INFO info;
    int row, col, i;
+   int screenheight;
+
    get_cursor_position( &row, &col );
-   gettextinfo( &ti );
-   for (i = status_size+1; i <= ti.screenheight; i++)
+
+   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+   screenheight = info.srWindow.Bottom - info.srWindow.Top + 1;
+
+   for (i = status_size+1; i <= screenheight; i++)
    {
       move_cursor(i, 1);
       clear_line();
    }
+
+   move_cursor( row, col );
 }                               /* clear_text_window */
 
 void clear_status_window( void )
 {
    int row, col, i;
+
+   get_cursor_position( &row, &col );
+
    for (i = 1; i <= status_size; i++)
    {
       move_cursor(i, 1);
       clear_line();
    }
+
+   move_cursor( row, col );
 }                               /* clear_status_window */
 
 void move_cursor( int row, int col )
 {
-   gotoxy( col, row );
+  COORD c;
+  CONSOLE_SCREEN_BUFFER_INFO info;
+
+  GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+
+  c.X = info.srWindow.Left + col - 1;
+  c.Y = info.srWindow.Top  + row - 1;
+  SetConsoleCursorPosition (GetStdHandle(STD_OUTPUT_HANDLE), c);
 }                               /* move_cursor */
-
-struct rccoord
-{
-   int row;
-   int col;
-};
-
-struct rccoord _gettextposition( void )
-{
-   struct rccoord rc_coord;
-
-   rc_coord.row = wherey(  );
-   rc_coord.col = wherex(  );
-   return rc_coord;
-}
 
 void get_cursor_position( int *row, int *col )
 {
-   struct rccoord rc;
+   CONSOLE_SCREEN_BUFFER_INFO info;
 
-   rc = _gettextposition(  );
-   *row = rc.row;
-   *col = rc.col;
+   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+
+   *row = info.dwCursorPosition.Y - info.srWindow.Top  + 1;;
+   *col = info.dwCursorPosition.X - info.srWindow.Left + 1;
 
 }                               /* get_cursor_position */
 
@@ -290,40 +352,44 @@ void restore_cursor_position( void )
 void set_attribute( int attribute )
 {
    int new_fg, new_bg;
-
+   unsigned short attrib;
 
    if ( attribute == NORMAL )
    {
-      new_fg = ( current_fg & 0x07 );
-      new_bg = current_bg;
+      attrib = current_fg + (current_bg << 4);
+   }
+   else
+   {
+      CONSOLE_SCREEN_BUFFER_INFO info;
+
+      GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+
+      attrib = info.wAttributes;
    }
 
    if ( attribute & REVERSE )
    {
-      new_fg = current_bg;
-      new_bg = ( current_fg & 0x07 );
+      attrib &= ~0x77;
+      attrib |= current_bg + (current_fg << 4);
    }
 
    if ( attribute & BOLD )
    {
-      new_fg = current_fg | BRIGHT;
-      new_bg = current_bg;
+      attrib |= BRIGHT;
    }
 
    if ( attribute & EMPHASIS )
    {
-      new_fg = current_fg | BRIGHT;
-      new_bg = current_bg;
+      attrib |= emphasis;
    }
-
+/*
    if ( attribute & FIXED_FONT )
    {
       new_fg = current_fg;
       new_bg = current_bg;
    }
-
-   textcolor( new_fg );
-   textbackground( new_bg );
+*/
+   SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), attrib );
 
 }                               /* set_attribute */
 
@@ -334,7 +400,7 @@ void display_char( int c )
    string[0] = ( char ) c;
    string[1] = '\0';
    cputs( string );
-   if ( string[0] == '\n' )
+   if ( c == '\n' )
    {
       display_char( '\r' );
    }
@@ -752,6 +818,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
             if ( c == '\r' || c == '\n' )
             {
                c = '\n';
+               move_cursor( row, tail_col );
                scroll_line(  );
             }
 
@@ -931,14 +998,43 @@ int read_key( void )
 
 void scroll_line( void )
 {
-   struct text_info ti;
+   CONSOLE_SCREEN_BUFFER_INFO info;
    int row, col;
-
+   int screenheight;
    get_cursor_position( &row, &col );
    clear_line();
-   gettextinfo( &ti );
-   if ( row == ti.screenheight )
-      movetext (1, status_size + 2, ti.screenwidth, ti.screenheight, 1, status_size+1);
+
+   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+   screenheight = info.srWindow.Bottom - info.srWindow.Top + 1;
+
+   if ( row == screenheight )
+   {
+      SMALL_RECT r;
+      CHAR_INFO* buffer;
+      COORD size;
+
+      size.X = info.srWindow.Right - info.srWindow.Left + 1;
+      size.Y = screenheight - status_size - 1;
+
+      if (size.Y > 0)
+      {
+         buffer = malloc (size.X * size.Y * sizeof(CHAR_INFO));
+
+         r = (SMALL_RECT) {info.srWindow.Left, info.srWindow.Top + status_size + 1,
+            info.srWindow.Right, info.srWindow.Bottom};
+
+         ReadConsoleOutput (GetStdHandle (STD_OUTPUT_HANDLE),
+            (PCHAR_INFO) buffer, size, (COORD) {0, 0}, &r);
+
+         r = (SMALL_RECT) {info.srWindow.Left, info.srWindow.Top + status_size,
+            info.srWindow.Right, info.srWindow.Bottom - 1};
+
+         WriteConsoleOutput (GetStdHandle (STD_OUTPUT_HANDLE),
+            buffer, size, (COORD) {0, 0}, &r);
+
+         free(buffer);
+      }
+   }
    else
    {
       row++;
@@ -970,8 +1066,8 @@ void set_colours( zword_t foreground, zword_t background )
    }
 
    /* Set foreground and background colour */
-   textcolor( fg );
-   textbackground( bg );
+   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE),
+      fg + (bg << 4));
 
    /* Save new foreground and background colours for restoring colour */
    current_fg = ( ZINT16 ) fg;
@@ -991,13 +1087,6 @@ void set_colours( zword_t foreground, zword_t background )
  * normal C, zero terminated, string.
  *
  * Return 0 if a translation was available, otherwise 1.
- *
- *  Arrow characters (0x18 - 0x1b):
- *
- *  0x18 Up arrow
- *  0x19 Down arrow
- *  0x1a Right arrow
- *  0x1b Left arrow
  *
  *  International characters (0x9b - 0xa3):
  *
@@ -1020,30 +1109,29 @@ void set_colours( zword_t foreground, zword_t background )
  *  all other are corner pieces (+)
  *
  */
-
 int codes_to_text( int c, char *s )
 {
-   /* Characters 24 to 27 and 179 to 218 need no translation */
-
-   if ( ( c > 23 && c < 28 ) || ( c > 178 && c < 219 ) )
+   if ( c > 154 && c < 224 )
    {
-      s[0] = ( char ) c;
+      s[0] = zscii2latin1[c - 155];
       s[1] = '\0';
-      return ( 0 );
+      if ( formatting == ON )
+      {
+         if ( c == 220 )
+         {
+            s[0] = 'o';
+            s[1] = 'e';
+            s[2] = '\0';
+         }
+         else if ( c == 221 )
+         {
+            s[0] = 'O';
+            s[1] = 'E';
+            s[2] = '\0';
+         }
+      }
+      return 0;
    }
 
-   /* German characters need translation */
-
-   if ( c > 154 && c < 164 )
-   {
-      char xlat[9] = { 0x84, 0x94, 0x81, 0x8e, 0x99, 0x9a, 0xe1, 0xaf, 0xae };
-
-      s[0] = xlat[c - 155];
-      s[1] = '\0';
-
-      return ( 0 );
-   }
-
-   return ( 1 );
-
+   return 1;
 }                               /* codes_to_text */
