@@ -821,10 +821,8 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                c = '\n';
                move_cursor( row, tail_col );
                scroll_line(  );
-            }
 
-            if ( ( c == '\n' ) || ( c > ( unsigned char ) '\x080' ) )
-            {                   /* Add the current command to the command buffer */
+               /* Add the current command to the command buffer */
 
                if ( *read_size > space_avail )
                {
