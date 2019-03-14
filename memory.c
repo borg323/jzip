@@ -75,12 +75,12 @@ void load_cache( void )
 
    /* Allocate output and status line buffers */
 
-   line = ( char * ) malloc( screen_cols + 1 );
+   line = ( unsigned short * ) malloc( ( screen_cols + 1 ) * sizeof( unsigned short ) );
    if ( line == NULL )
    {
       fatal( "load_cache(): Insufficient memory to play game" );
    }
-   status_line = ( char * ) malloc( screen_cols + 1 );
+   status_line = ( unsigned short * ) malloc( ( screen_cols + 1 ) * sizeof( unsigned short ) );
    if ( status_line == NULL )
    {
       fatal( "load_cache(): Insufficient memory to play game" );
@@ -141,6 +141,17 @@ void load_cache( void )
          read_page( cachep->page_number, cachep->data );
          cache = cachep;
       }
+   }
+
+   /* Check for custom unicode table */
+
+   if ( h_type >= V5 )
+   {  zword_t h_extension_offset, len = 0;
+      h_extension_offset = get_word( H_EXTENSION_OFFSET );
+      if ( h_extension_offset )
+         len = get_word( h_extension_offset );
+      if ( len >= 3 )
+         h_unicode_table = get_word( h_extension_offset + 6 );
    }
 
 }                               /* load_cache */

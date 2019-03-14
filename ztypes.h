@@ -222,7 +222,8 @@ typedef struct zheader
    zword_t function_keys_offset;
    zword_t filler2[2];
    zword_t alternate_alphabet_offset;
-   zword_t mouse_position_offset;
+//   zword_t mouse_position_offset;
+   zword_t extension_offset;
    zword_t filler3[4];
 }
 zheader_t;
@@ -271,7 +272,7 @@ zheader_t;
 #define H_FILE_SIZE           26
 #define H_CHECKSUM            28
 #define H_INTERPRETER         30
-#define H_UNICODE_TABLE       34
+//#define H_UNICODE_TABLE       34
 
 #define INTERP_GENERIC 0
 #define INTERP_DEC_20 1
@@ -306,6 +307,7 @@ zheader_t;
 #define H_STANDARD_LOW 51
 
 #define H_ALTERNATE_ALPHABET_OFFSET 52
+#define H_EXTENSION_OFFSET 54
 #define H_MOUSE_POSITION_OFFSET 54
 #define H_FILLER3 56
 
@@ -469,6 +471,7 @@ extern zword_t h_checksum;
 extern zbyte_t h_interpreter;
 extern zbyte_t h_interpreter_version;
 extern zword_t h_alternate_alphabet_offset;
+extern zword_t h_extension_offset;
 extern zword_t h_unicode_table;
 
 extern int story_scaler;
@@ -509,14 +512,14 @@ extern int font;
 extern int status_active;
 extern int status_size;
 
-extern char fTandy;             
-extern char fIBMGraphics;       
+extern char fTandy;
+extern char fIBMGraphics;
 
 extern int lines_written;
 extern int status_pos;
 
-extern char *line;
-extern char *status_line;
+extern unsigned short *line;
+extern unsigned short *status_line;
 
 extern char lookup_table[3][26];
 
@@ -524,7 +527,7 @@ extern char monochrome;
 extern int hist_buf_size;
 extern char bigscreen;
 
-extern unsigned char zscii2latin1[69];
+extern unsigned short zscii2latin1[69];
 
 #ifdef STRICTZ
 
@@ -676,12 +679,11 @@ zword_t load_variable( int );
 
 /* osdepend.c */
 
-int codes_to_text( int, char * );
 void fatal( const char * );
 void file_cleanup( const char *, int );
-int fit_line( const char *, int, int );
+int fit_line( const unsigned short *, int, int );
 int get_file_name( char *, char *, int );
-int print_status( int, char *[] );
+int print_status( int, unsigned short *[] );
 void process_arguments( int, char *[] );
 void set_colours( zword_t, zword_t );
 void set_font( int );
@@ -742,12 +744,12 @@ void clear_text_window( void );
 void create_status_window( void );
 void delete_status_window( void );
 void display_char( int );
-int fit_line( const char *, int, int );
+int fit_line( const unsigned short *, int, int );
 void get_cursor_position( int *, int * );
 void initialize_screen( void );
 int input_line( int, char *, int, int *, int );
 void move_cursor( int, int );
-int print_status( int, char *[] );
+int print_status( int, unsigned short *[] );
 void reset_screen( void );
 void restart_screen( void );
 void restore_cursor_position( void );
@@ -777,6 +779,8 @@ void decode_text( unsigned long * );
 void encode_text( int, const char *, ZINT16 * );
 void flush_buffer( int );
 void print_time( int, int );
+int translate_from_zscii( int );
+int translate_to_zscii( int );
 void write_char( int );
 void write_string( const char * );
 void write_zchar( int );

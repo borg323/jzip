@@ -38,6 +38,7 @@
  */
 
 #include "ztypes.h"
+#include <wctype.h>
 
 static int saved_formatting = ON;
 static int story_buffer = 0;
@@ -437,6 +438,34 @@ void encode_text( int len, const char *s, ZINT16 * buffer )
 }                               /* encode_text */
 
 /*
+ * translate_from_zscii
+ *
+ *
+ */
+
+int translate_from_zscii(int c)
+{
+   c = ( unsigned int ) ( c & 0xff );
+
+   if ( c > 154 )
+   {
+      unsigned short s = '?';
+      if ( c < 224 )
+         s = zscii2latin1[c - 155];
+      if ( h_unicode_table )
+      {
+         int len = get_byte( h_unicode_table );
+         if ( c < 155 + len )
+         {
+            s = get_word( h_unicode_table + 2 * ( c - 155 ) + 1);
+         }
+      }
+      return s;
+   }
+   return c;
+}
+
+/*
  * write_zchar
  *
  * High level Z-code character output routine. Translates Z-code characters to
@@ -448,7 +477,6 @@ void encode_text( int len, const char *s, ZINT16 * buffer )
 
 void write_zchar( int c )
 {
-   char xlat_buffer[MAX_TEXT_SIZE + 1];
    int i;
 
    c = ( unsigned int ) ( c & 0xff );
@@ -463,70 +491,45 @@ void write_zchar( int c )
    {
       write_char( '\r' );
    }
+   else if ( c > 154 )
+   {
+      write_char( translate_from_zscii( c ) );
+   }
    else
    {
+      char xlat_buffer[5];
       /* Put default character in translation buffer */
       xlat_buffer[0] = '?';
       xlat_buffer[1] = '\0';
-
-      /* If translation fails then supply a default */
-      if ( codes_to_text( c, xlat_buffer ) )
+      if ( c > 23 && c < 28 )
       {
-         if ( c > 23 && c < 28 )
-         {
-            /* Arrow keys - these must the keyboard keys used for input */
-            static char xlat[4] = { '\\', '/', '+', '-' };
+         /* Arrow keys - these must the keyboard keys used for input */
+         static char xlat[4] = { '\\', '/', '+', '-' };
 
-            xlat_buffer[0] = xlat[c - 24];
-            xlat_buffer[1] = '\0';
-         }
-         else if ( c == 0 )
-         {
-            /* Null - print nothing */
-            xlat_buffer[0] = '\0';
-         }
-         else if ( c < 32 )
-         {
-            /* Some other control character: print an octal escape. */
-            xlat_buffer[0] = '\\';
-            xlat_buffer[1] = ( char ) ( '0' + ( ( c >> 6 ) & 7 ) );
-            xlat_buffer[2] = ( char ) ( '0' + ( ( c >> 3 ) & 7 ) );
-            xlat_buffer[3] = ( char ) ( '0' + ( c & 7 ) );
-            xlat_buffer[4] = '\0';
-         }
-         else if ( c > 178 && c < 219 )
-         {
-            /* IBM line drawing characters to ASCII characters */
-            if ( c == 179 )
-               xlat_buffer[0] = '|';
-            else if ( c == 186 )
-               xlat_buffer[0] = '#';
-            else if ( c == 196 )
-               xlat_buffer[0] = '-';
-            else if ( c == 205 )
-               xlat_buffer[0] = '=';
-            else
-               xlat_buffer[0] = '+';
-            xlat_buffer[1] = '\0';
-         }
-         else if ( c > 154 && c < 164 )
-         {
-            /* German character replacements */
-            static char xlat[] = "aeoeueAeOeUess>><<";
-
-            xlat_buffer[0] = xlat[( ( c - 155 ) * 2 ) + 0];
-            xlat_buffer[1] = xlat[( ( c - 155 ) * 2 ) + 1];
-            xlat_buffer[2] = '\0';
-         }
+         xlat_buffer[0] = xlat[c - 24];
+         xlat_buffer[1] = '\0';
+      }
+      else if ( c == 0 )
+      {
+         /* Null - print nothing */
+         xlat_buffer[0] = '\0';
+      }
+      else if ( c < 32 )
+      {
+         /* Some other control character: print an octal escape. */
+         xlat_buffer[0] = '\\';
+         xlat_buffer[1] = ( char ) ( '0' + ( ( c >> 6 ) & 7 ) );
+         xlat_buffer[2] = ( char ) ( '0' + ( ( c >> 3 ) & 7 ) );
+         xlat_buffer[3] = ( char ) ( '0' + ( c & 7 ) );
+         xlat_buffer[4] = '\0';
       }
 
       /* Substitute translated characters */
 
       for ( i = 0; xlat_buffer[i] != '\0'; i++ )
       {
-         write_char( ( unsigned char ) xlat_buffer[i] );
+         write_char( xlat_buffer[i] );
       }
-
    }
 }                               /* write_zchar */
 
@@ -535,29 +538,46 @@ void write_zchar( int c )
  *
  *
  */
-zbyte_t translate_to_zscii(int c)
+int translate_to_zscii(int c)
 {
    int i;
 
    if( c>= 0xa0 )
    {
-      if( h_unicode_table !=0 ) 
+      int len = 0;
+      if ( h_unicode_table )
       {
-         fprintf(stderr,"[[ Unicode support not enabled yet. ]]");
-      }
-      else 
-      {
-         for (i = 0x9b; i <= 0xdf; i++)
+         int len = get_byte( h_unicode_table );
+         for (i = 0; i < len; i++)
          {
-            if (c == zscii2latin1[i - 0x9b])
+            if ( c == ( get_word( h_unicode_table + 2 * i + 1 ) ) )
             {
-               return (zbyte_t) i;
+               return (0x9b + i);
             }
          }
-         return '?';
       }
+      for (i = 0x9b + len; i <= 0xdf; i++)
+      {
+         if (c == zscii2latin1[i - 0x9b])
+         {
+            return i;
+         }
+      }
+      return '?';
    }   
-   return (zbyte_t) c;
+   return c;
+}
+
+static unsigned short *strrushort( unsigned short *s, unsigned short c )
+{
+   unsigned short *r = NULL;
+   while ( *s )
+   {
+      if ( *s == c )
+         r = s;
+      s++;
+   }
+   return r;
 }
 
 /*
@@ -570,7 +590,7 @@ zbyte_t translate_to_zscii(int c)
  */
 void write_char( int c )
 {
-   char *cp;
+   unsigned short *cp;
    int right_len;
 
    /* Only do if text formatting is turned on */
@@ -581,7 +601,7 @@ void write_char( int c )
        * for V1 to V3 games or into the writeable data area for V4+ games */
       if ( h_type < V4 )
       {
-         status_line[status_pos++] = ( char ) c;
+         status_line[status_pos++] = c;
       }
       else
       {
@@ -605,7 +625,7 @@ void write_char( int c )
          else
          {
             /* Wrap the line. First find the last space */
-            cp = strrchr( line, ' ' );
+            cp = strrushort( line, ' ' );
 
             /* If no spaces in the lines then cannot do wrap */
             if ( cp == NULL )
@@ -628,7 +648,7 @@ void write_char( int c )
                /* If any text to wrap then move it to the start of the line */
                if ( right_len > 0 )
                {
-                  memmove( line, cp, right_len );
+                  memmove( line, cp, right_len * sizeof( unsigned short ) );
                   line_pos = right_len;
                }
             }
@@ -638,10 +658,11 @@ void write_char( int c )
        * Decrement line width if the character is visible */
       if ( c )
       {
-         line[line_pos++] = ( char ) c;
+         line[line_pos++] = c;
 
          /* Wrap the line when there is a newline in the stream. */
-         cp = strrchr( line, 13 );
+         cp = strrushort( line, 13 );
+
          if ( cp!= NULL )
          {
             /* Terminate the line at the last space */
@@ -656,12 +677,12 @@ void write_char( int c )
             /* If any text to wrap then move it to the start of the line */
             if ( right_len > 0 )
             {
-               memmove( line, cp, right_len );
+               memmove( line, cp, right_len * sizeof( unsigned short ) );
                line_pos = right_len;
             }
          }
 
-         if ( isprint( c ) )
+         if ( !iswcntrl( c ) )
          {
             char_count--;
          }
@@ -721,15 +742,21 @@ void write_string( const char *s )
 
 void flush_buffer( int flag )
 {
+   unsigned short *s;
+
    /* Terminate the line */
    line[line_pos] = '\0';
 
    /* Send the line buffer to the printer */
-   script_string( line );
+   s = line;
+   while ( *s )
+      script_char( *s++ );
    flush_script(  );            
 
    /* Send the line buffer to the screen */
-   output_string( line );
+   s = line;
+   while ( *s )
+      output_char( *s++ );
 
    /* Reset the character count only if a carriage return is expected */
    if ( flag == TRUE )

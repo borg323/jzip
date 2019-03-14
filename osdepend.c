@@ -637,7 +637,7 @@ void report_strictz_error( int errnum, const char *errstr )
  * max  : Maximum number of characters to fit on the screen.
  *
  */
-int fit_line( const char *line_buffer, int pos, int max )
+int fit_line( const unsigned short *line_buffer, int pos, int max )
 {
    UNUSEDVAR( line_buffer );
 
@@ -669,7 +669,7 @@ int fit_line( const char *line_buffer, int pos, int max )
  *
  */
 
-int print_status( int argc, char *argv[] )
+int print_status( int argc, unsigned short *argv[] )
 {
    UNUSEDVAR( argc );
    UNUSEDVAR( argv );

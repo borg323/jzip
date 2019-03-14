@@ -161,10 +161,6 @@ static void configure( zbyte_t min_version, zbyte_t max_version )
    h_checksum = get_word( H_CHECKSUM );
    h_alternate_alphabet_offset = get_word( H_ALTERNATE_ALPHABET_OFFSET );
 
-   if ( h_type >= V5 )
-   {
-      h_unicode_table = get_word( H_UNICODE_TABLE );
-   }
    datap = NULL;
 
 }                               /* configure */

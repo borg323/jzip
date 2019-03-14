@@ -257,7 +257,7 @@ static void pad_line( int column )
 void z_show_status( void )
 {
    int i, count = 0, end_of_string[3];
-   char *status_part[3];
+   unsigned short *status_part[3];
 
    /* Move the cursor to the top line of the status window, set the reverse
     * rendition and print the status line */
@@ -324,10 +324,13 @@ void z_show_status( void )
 
    if ( print_status( count, status_part ) == FALSE )
    {
+      unsigned short *s;
       for ( i = 0; i < count; i++ )
          status_line[end_of_string[i]] = ' ';
       status_line[status_pos] = '\0';
-      write_string( status_line );
+      s = status_line;
+      while ( *s )
+         write_char( *s++ );
    }
 
    set_attribute( NORMAL );
@@ -344,6 +347,7 @@ void z_show_status( void )
 
 void blank_status_line( void )
 {
+   unsigned short *s;
 
    /* Move the cursor to the top line of the status window, set the reverse
     * rendition and print the status line */
@@ -362,7 +366,9 @@ void blank_status_line( void )
 
    /* Write the status line */
 
-   write_string( status_line );
+   s = status_line;
+   while ( *s )
+      write_char( *s++ );
 
    /* Turn off attributes and return to text window */
 
@@ -411,7 +417,7 @@ void output_char( int c )
 
    if ( outputting == ON )
    {
-      display_char( (unsigned int)(c & 0xff) );
+      display_char( c );
    }
 }                               /* output_char */
 

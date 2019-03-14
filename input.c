@@ -261,7 +261,7 @@ int get_line( char *cbuf, zword_t timeout, zword_t action_routine )
          {
             int i;
             for (i = 0; i < read_size; i++ )
-               write_char( buffer[i] );
+               write_zchar( ( unsigned char ) buffer[i] );
             flush_buffer( FALSE );
          }
          move_cursor( row, prev_col );
@@ -279,7 +279,6 @@ int get_line( char *cbuf, zword_t timeout, zword_t action_routine )
 
       if ( status )
          read_size = 0;
-
 
    }
 

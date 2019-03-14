@@ -35,6 +35,7 @@
 /* *JWK* 2000-02-29 */
 
 #include "ztypes.h"
+#include <unistd.h>
 
 #if defined(BSD)
 #include <sgtty.h>
@@ -127,9 +128,31 @@ extern char *tgetstr(  );
 extern char *tgoto(  );
 extern void tputs(  );
 
+/* print unicode char <= 0xffff in utf-8 */
+
 void outc( int c )
 {
-   putchar( c );
+   if ( c <= 0x7f )
+      putchar( c );
+   else if ( c < 0x7ff )
+   {
+      char s[3];
+      s[0] = 0xc0 | ( c >> 6 );
+      s[1] = 0x80 | ( c & 0x3f );
+      s[2] = 0;
+      fputs( s, stdout );
+   }
+   else if ( c < 0x10000 )
+   {
+      char s[4];
+      s[0] = 0xe0 | ( c >> 12 );
+      s[1] = 0x80 | ( ( c >> 6 ) & 0x3f );
+      s[2] = 0x80 | ( c & 0x3f );
+      s[3] = 0;
+      fputs( s, stdout );
+   }
+   else
+      putchar('?');
 }                               /* outc */
 
 void initialize_screen(  )
@@ -622,7 +645,7 @@ int display_command( char *buffer )
       for ( loop = ptr1; loop <= ptr2; loop++ )
       {
          buffer[counter] = commands[loop];
-         display_char( buffer[counter++] );
+         display_char( translate_from_zscii ( buffer[counter++] ) );
       }
       return ( counter );
    }
@@ -915,7 +938,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                for ( loop = curr_char_pos; loop < *read_size; loop++ )
                {
                   buffer[loop - 1] = buffer[loop];
-                  display_char( buffer[loop - 1] );
+                  display_char( translate_from_zscii( buffer[loop - 1] ) );
                }
                display_char( ' ' );
                curr_char_pos--;
@@ -988,7 +1011,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 
                      for ( loop = curr_char_pos; loop < *read_size; loop++ )
                      {
-                        display_char( buffer[loop] );
+                        display_char( translate_from_zscii( buffer[loop] ) );
                      }
 
                      /* Moves the cursor to the next position */
@@ -1000,7 +1023,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                   {
                      /* Used if the cursor is at the end of the line */
                      buffer[curr_char_pos++] = ( char ) c;
-                     display_char( c );
+                     display_char( translate_from_zscii ( c ) );
                      ( *read_size )++;
                      tail_col++;
                   }
@@ -1090,6 +1113,18 @@ static int read_key( int mode )
          tputs( TE, 1, outc );
          exit( 0 );
       }                      /* CTRL-D (EOF) */
+      else if ( ct == 2 && ( in[0] & 0xe0 ) == 0xc0 && ( in[1] & 0xc0 ) == 0x80 )
+      {
+         int u = ( ( in[0] & 0x1f ) << 6 ) | ( in[1] & 0x3f );
+         return translate_to_zscii( u );
+      }
+      else if ( ct == 3 && ( in[0] & 0xf0 ) == 0xe0 && ( in[1] & 0xc0 ) == 0x80 && ( in[2] & 0xc0 ) == 0x80 )
+      {
+         int u = ( ( in[0] & 0x0f ) << 12 ) | ( ( in[1] & 0x3f ) << 6 ) | ( in[2] & 0x3f );
+         return translate_to_zscii( u );
+      }
+      else if ( ct == 4 && ( in[0] & 0xf8 ) == 0xf0 )
+          return '?';
       else if ( in[0] == KU[0] && in[ct-1] == KU[strlen(KU)-1] )
           return 0x81;
       else if ( in[0] == KD[0] && in[ct-1] == KD[strlen(KD)-1] )
@@ -1284,63 +1319,3 @@ void set_colours( zword_t foreground, zword_t background )
 }
 #endif
 
-/*
- * codes_to_text
- *
- * Translate Z-code characters to machine specific characters. These characters
- * include line drawing characters and international characters.
- *
- * The routine takes one of the Z-code characters from the following table and
- * writes the machine specific text replacement. The target replacement buffer
- * is defined by MAX_TEXT_SIZE in ztypes.h. The replacement text should be in a
- * normal C, zero terminated, string.
- *
- * Return 0 if a translation was available, otherwise 1.
- *
- *  International characters (0x9b - 0xa3):
- *                                        
- *  0x9b a umlaut (ae)                    
- *  0x9c o umlaut (oe)
- *  0x9d u umlaut (ue)
- *  0x9e A umlaut (Ae)
- *  0x9f O umlaut (Oe)
- *  0xa0 U umlaut (Ue)
- *  0xa1 sz (ss)     
- *  0xa2 open quote (>>)
- *  0xa3 close quota (<<)
- *                      
- *  Line drawing characters (0xb3 - 0xda):
- *                                       
- *  0xb3 vertical line (|)               
- *  0xba double vertical line (#)
- *  0xc4 horizontal line (-)    
- *  0xcd double horizontal line (=)
- *  all other are corner pieces (+)
- *                                
- */
-int codes_to_text( int c, char *s )
-{
-   if ( c > 154 && c < 224 )
-   {
-      s[0] = zscii2latin1[c - 155];
-      s[1] = '\0';
-      if ( formatting == ON )
-      {
-         if ( c == 220 )
-         {
-            s[0] = 'o';
-            s[1] = 'e';
-            s[2] = '\0';
-         }
-         else if ( c == 221 )
-         {
-            s[0] = 'O';
-            s[1] = 'E';
-            s[2] = '\0';
-         }
-      }
-      return 0;
-   }
-
-   return 1;
-}                               /* codes_to_text */
