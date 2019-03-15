@@ -197,7 +197,7 @@ void process_arguments( int argc, char *argv[] )
             fprintf( stdout, "---------------------------------------------------------\n" );
             fprintf( stdout, "Author          :  %s\n", JZIPAUTHOR );
             fprintf( stdout, "Official Webpage: %s\n", JZIPURL );
-            fprintf( stdout, "IF Archive      : ftp://ftp.gmd.de/if-archive/interpreters/zip/\n" );
+            fprintf( stdout, "IF Archive      : ftp://ifarchive.org/infocom/interpreters/zip/\n" );
             fprintf( stdout, "         Based on ZIP 2.0 source code by Mark Howell\n\n" );
             fprintf( stdout,
                      "Bugs:    Please report bugs and portability bugs to the maintainer." );
