@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include "jzexe.h"
 
@@ -67,7 +68,11 @@ static char in_name[NAME_LENGTH + 1];
 static char out_name[NAME_LENGTH + 1];
 
 /* The name of the JZip executable */
+#if defined(MSDOS) || defined(__MSDOS__)
 #define JZIP_NAME "jzip.exe"
+#else
+#define JZIP_NAME "/usr/games/jzip"
+#endif
 
 void abort_program( int exit_code )
 {
@@ -81,6 +86,7 @@ FILE *open_file( char *name, int input )
 {
    char *mode;
    FILE *f;
+   int tempfd;
 
    if ( input )
    {
@@ -89,14 +95,22 @@ FILE *open_file( char *name, int input )
        * just in case */
       in_name[NAME_LENGTH] = 0;
       mode = READ_MODE;
+
+      f = fopen(name, mode);
    }
    else
    {
       strncpy( out_name, name, NAME_LENGTH );
       out_name[NAME_LENGTH] = 0;
       mode = WRITE_MODE;
+
+      tempfd = creat(name, 0755);
+       if (tempfd == -1) {
+               fprintf(stderr, "Error creating file %s\n", name);
+               abort_program(1);
+       }
+       f = fdopen(tempfd, WRITE_MODE);
    }
-   f = fopen( name, mode );
    if ( !f )
    {
       fprintf( stderr, "Error opening file %s\n", name );
