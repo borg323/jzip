@@ -737,6 +737,7 @@ void output_line( const char * );
 /* screenio.c */
 
 int input_character( int );
+int check_font_char( int );
 void clear_line( void );
 void clear_screen( void );
 void clear_status_window( void );
@@ -775,6 +776,8 @@ void z_buffer_mode( zword_t );
 void z_output_stream( zword_t, zword_t );
 void z_input_stream( int );
 void z_set_text_style( zword_t );
+void z_print_unicode( zword_t );
+void z_check_unicode( zword_t );
 void decode_text( unsigned long * );
 void encode_text( int, const char *, ZINT16 * );
 void flush_buffer( int );

@@ -142,9 +142,11 @@ int interpret(  )
                case 0x0a:
                   z_restore_undo(  );
                   break;
-
+               case 0x0b:
+                  z_print_unicode( operand[0] );
+                  break;
                case 0x0c:
-                  store_operand( 0 );
+                  z_check_unicode( operand[0] );
                   break;
 
                default:

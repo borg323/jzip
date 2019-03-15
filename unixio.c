@@ -1326,3 +1326,9 @@ void set_colours( zword_t foreground, zword_t background )
 }
 #endif
 
+int check_font_char( int c )
+{
+   /* A first approximation */
+   return !iswcntrl( c );
+}
+

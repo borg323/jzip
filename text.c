@@ -1171,3 +1171,31 @@ void z_encode( zword_t word_addr, zword_t word_length, zword_t word_offset, zwor
       set_word( dest_addr, word[i] );
 
 }                               /* z_encode */
+
+/*
+ * z_print_unicode
+ *
+ * Print a Unicode character.
+ *
+ */
+
+void z_print_unicode( zword_t c )
+{
+   write_char( c );
+}                               /* z_print_unicode */
+
+/*
+ * z_check_unicode
+ *
+ * Checks whether a Unicode character can be printed, or received from the keyboard.
+ *
+ */
+void z_check_unicode( zword_t c )
+{
+   int f = 0;
+   if ( check_font_char( c) )
+     f |= 1;
+   if ( c == '?' || translate_to_zscii( c ) != '?')
+     f |= 2;
+   store_operand( f );
+}                               /* z_check_unicode */
