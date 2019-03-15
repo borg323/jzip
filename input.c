@@ -318,7 +318,7 @@ static void tokenise_line( zword_t char_buf, zword_t token_buf, zword_t dictiona
    int slen;
    char *str_end;
    char *cbuf, *tbuf, *tp;
-   const char *cp, *token;
+   const char *cp, *token=NULL;
    char punctuation[16];
    zword_t word;
 
@@ -375,7 +375,7 @@ static void tokenise_line( zword_t char_buf, zword_t token_buf, zword_t dictiona
       /* Skip to next token */
 
       cp = next_token( cp, str_end, &token, &token_length, punctuation );
-      if ( token_length )
+      if ( token_length ) {
 
          /* If still space in token buffer then store word */
 
@@ -409,6 +409,7 @@ static void tokenise_line( zword_t char_buf, zword_t token_buf, zword_t dictiona
             output_string( "Too many words typed, discarding: " );
             output_line( token );
          }
+      }
    }
    while ( token_length );
 

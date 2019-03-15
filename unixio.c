@@ -102,8 +102,10 @@ static void display_string( char *s );
 static int wait_for_char(  );
 static int read_key( int );
 static void set_cbreak_mode( int );
+#if 0
 static void rundown(  );
 static void sig_rundown(  );
+#endif
 void get_prev_command(  );
 void get_next_command(  );
 void get_first_command(  );
@@ -127,6 +129,7 @@ extern int tgetnum(  );
 extern char *tgetstr(  );
 extern char *tgoto(  );
 extern void tputs(  );
+extern char *tgetflag(  );
 
 /* print unicode char <= 0xffff in utf-8 */
 
@@ -779,9 +782,6 @@ void add_command( char *buffer, int size )
 
 int input_line( int buflen, char *buffer, int timeout, int *read_size, int start_col )
 {
-   struct timeval tv;
-   struct timezone tz;
-
    int c, col;
    int init_char_pos, curr_char_pos;
    int loop, tail_col;
@@ -1048,8 +1048,6 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
  */
 int input_character( int timeout )
 {
-   struct timeval tv;
-   struct timezone tz;
    int c;
 
    fflush( stdout );
@@ -1189,9 +1187,11 @@ static void set_cbreak_mode( int mode )
    if ( mode )
    {
 
+#if 0
 /*        signal (SIGINT, sig_rundown);
         signal (SIGTERM, sig_rundown);
 	*/
+#endif
    }
 
    if ( mode )
@@ -1257,6 +1257,7 @@ static void set_cbreak_mode( int mode )
 
 }                               /* set_cbreak_mode */
 
+#if 0
 static void rundown(  )
 {
    unload_cache(  );
@@ -1272,6 +1273,7 @@ static void sig_rundown(  )
    close_script(  );
    sig_reset_screen(  );
 }                               /* rundown */
+#endif
 
 #if defined HARD_COLORS
 
@@ -1283,7 +1285,7 @@ static void sig_rundown(  )
  */
 void set_colours( zword_t foreground, zword_t background )
 {
-   int fg, bg;
+   int fg = 0, bg = 0;
    static int bgset = 0;
 
    int fg_colour_map[] = { 30, 31, 32, 33, 34, 35, 36, 37 };

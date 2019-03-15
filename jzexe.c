@@ -142,6 +142,7 @@ long search( FILE * f )
    }
    fprintf( stderr, "Couldn't find magic string." );
    abort_program( 1 );
+   return 0; /* should not return */
 }
 
 /*
@@ -266,10 +267,9 @@ void patch( FILE * f, long pos, long value )
 void create_executable( char *story, char *jzip )
 {
    FILE *in, *out;
-   long p, length, pos;
+   long length, pos;
    char fn[NAME_LENGTH + 4];
    char *ext;
-   int ok;
 
    strcpy( in_name, "" );
    strcpy( out_name, "" );
@@ -366,7 +366,7 @@ This command extracts the Z code from a standalone executable and creates\n\
 a story file that can be played with JZip or any other interpreter.\n\
 Note that the extension '.exe' of the game file must be given.\n"
 
-void main( int argc, char **argv )
+int main( int argc, char **argv )
 {
    buf = ( unsigned char * ) malloc( BUFSIZE * sizeof ( unsigned char ) );
 

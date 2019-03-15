@@ -32,6 +32,10 @@
  *
  */
 
+#ifdef HAVE_GETOPT
+#include <getopt.h>
+#endif
+
 #include "ztypes.h"
 #include "jzexe.h"
 
@@ -85,9 +89,10 @@ static int strictz_error_count[STRICTZ_NUM_ERRORS];
 #if !defined(AMIGA)
 
 /* getopt linkages */
-
+#if !defined(POSIX)
 extern int optind;
 extern const char *optarg;
+#endif /* !defined(POSIX) */
 extern ZINT16 default_fg, default_bg;
 
 #endif /* !defined(AMIGA) */

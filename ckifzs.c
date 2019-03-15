@@ -231,7 +231,9 @@ int main( int argc, char **argv )
       }
       else if ( !strncmp( id, "CMem", 4 ) )
       {
+#if defined SHORT_DUMP || defined LONG_DUMP
          unsigned long ul1, ul2; 
+#endif
 
          printf( " (compressed memory)" ); 
 #if defined SHORT_DUMP          
@@ -459,7 +461,7 @@ int main( int argc, char **argv )
                      }          
                      cklen -= 4;
                      filelen -= 4; 
-                     printf( "  %d bytes of data", cklen ); 
+                     printf( "  %ld bytes of data", cklen ); 
                   }             
                }                
             }                   
@@ -472,7 +474,6 @@ int main( int argc, char **argv )
          if ( cklen >= 1 )      
          {                      
             unsigned long l;    
-            unsigned char uch1; 
 
             fputs( "    ", stdout ); 
             for ( l = 0; l < cklen; ++l ) 
@@ -490,7 +491,6 @@ int main( int argc, char **argv )
          if ( cklen >= 1 )      
          {                      
             unsigned long l;    
-            unsigned char uch1; 
 
             fputs( "    ", stdout ); 
             for ( l = 0; l < cklen; ++l ) 
@@ -508,7 +508,6 @@ int main( int argc, char **argv )
          if ( cklen >= 1 )      
          {                      
             unsigned long l;    
-            unsigned char uch1; 
 
             fputs( "    ", stdout ); 
             for ( l = 0; l < cklen; ++l ) 
@@ -526,7 +525,6 @@ int main( int argc, char **argv )
          if ( cklen >= 1 )      
          {                      
             unsigned long l;    
-            unsigned char uch1; 
 
             fputs( "    ", stdout ); 
             for ( l = 0; l < cklen; ++l ) 
@@ -540,11 +538,11 @@ int main( int argc, char **argv )
       }
       else if ( !strncmp( id, "    ", 4 ) )
       {
-         printf( " (%d-byte filler)\n", cklen ); 
+         printf( " (%ld-byte filler)\n", cklen ); 
       }
       else
       {
-         printf( "\n*** Unknown %d-byte chunk type found.\n", cklen ); 
+         printf( "\n*** Unknown %ld-byte chunk type found.\n", cklen ); 
          ++errors;
       }
       filelen -= 8;
