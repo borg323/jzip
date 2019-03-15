@@ -1,0 +1,362 @@
+/* $Id: Jzip.txt,v 1.2 2000/10/05 16:29:32 jholder Exp $ */
+
+                           -------------------
+                             J z i p  2 . 1 
+                           -------------------
+                             User's  Manual
+
+                             By John Holder
+                           (j-holder@home.com)
+
+        Contents:
+                1.0 Introduction
+                
+                2.0 What is Jzip?  
+                    2.1 Description
+                    2.2 How do I play Infocom/Inform Games?
+                    2.3 What platforms does Jzip run on?
+                
+                3.0 Features, and how to use them
+                    3.1 Command line options
+                        3.1.1 Setting the screen size
+                        3.1.2 Setting the size of the command history
+                        3.1.3 Getting version information
+                        3.1.4 Using STRICTZ and why you would want to
+                        3.1.5 DOS only features
+                              - Monochrome mode
+                              - EGA/VGA bigscreen mode
+                    3.2 Using the command history buffer
+                        3.2.1 Under DOS
+                        3.2.2 Under UNIX/Atari ST
+                    3.3 Using the INFOCOM_PATH environment variable
+                        3.3.1 Under DOS
+                        3.3.2 Under UNIX
+                        3.3.3 Under Atari ST
+                    3.4 Portable Save Game files
+                    3.5 Compressed Game Files
+                    
+                4.0 Utilities for Jzip
+                    4.1 Jzexe - make DOS native .exe game files
+		    4.2 ckifzs - check a Quetzal save file's validity
+
+                5.0 Building Jzip
+                    5.1 UNIX/BeOS
+                    5.2 DOS
+                    5.3 Atari ST
+                    5.4 Bugs
+
+                6.0 Known Bugs
+
+                7.0 Credits
+
+                8.0 License Agreement / Disclaimer
+
+
+        ___________________________________________________________
+
+        1.0 Introduction
+                
+            Welcome to the Jzip User's manual.  I hope this 
+            program is useful to you, and that it provides you with
+            many hours of enjoyment.  This release of Jzip has seen
+            incredible amounts of improvement - ZSTRICT checking,
+            Z-Spec 1.0 compliance, and Quetzal save files.
+
+        ___________________________________________________________
+
+        2.0 What is Jzip?  
+        
+        2.1 Description  
+
+            Jzip is a program that emulates a virtual machine 
+            created by Infocom, called the Zmachine.  All Infocom
+            games (including the famous Zork and many others) are
+            designed to run on this virtual machine, and they are
+            in a format called "Z-code".  There are currently
+            eight different versions of Z-code, and Jzip currently
+            supports versions 1-5 and 8.
+
+            What does this mean?  It means Jzip can play any game 
+            written in one of these versions of Z-code.  All games
+            writtens by Infocom except for Zork Zero, Journey, 
+            Shogun, and Arthur (which are version 6 Z-code) can be
+            played with Jzip, as can all games created with Graham
+            Nelson's excellent adventure game compiler, Inform.
+            For more on Inform, see section 6.3.
+        
+        2.2 How do I play Infocom/Inform Games?
+
+            All Infocom gamefiles end in .dat. These games are in 
+            "Z-code" versions 1-5.  All Inform games end in either .z3, 
+            .z5, or .z8 (so far).  These extensions mean that a file 
+            is a "Z-code" adventure game in version 3, version 5, or 
+            version 8.  These files are not compressed, but are ordinary 
+            binary files, and should be downloaded by FTP in 'binary' 
+            mode. 
+
+            Jzip can also be combined with a gamefile to make a 
+            standalone DOS executable (that with still be playable by
+            Jzip on OTHER platforms!).  If you want to learn how to
+            do this, see section 4.1.
+
+        2.3 What platforms does Jzip run on?
+
+            Jzip is known to run on DOS, Windows NT/95, OS/2, UNIX
+            (including DEC/OSF, FreeBSD, HP/UX, IBM/AIX, Linux, 
+            NeXT/Mach, SGI/IRIX, Solaris, and SunOS), BeOS and 
+            Atari ST machines.  If you want to compile Jzip
+            for a new port or just because, see section 5.0.
+                
+        ___________________________________________________________
+
+        3.0 Features, and how to use them
+
+        3.1 Command line options
+
+            Command line option are options that are entered on the
+            command line after typing the name of the file to run.
+            If you wanted to run Jzip with a 4K command history
+            buffer and play the game Zork 1, you would enter it like
+            this:
+
+            > jzip -k 4096 zork1.dat
+
+            The command line options for Jzip may be entered in any
+            order, but they must all come before the name of the game
+            file you wish to run.
+
+        3.1.1 Setting the screen size
+
+            There are four command-line options that help set the 
+            screen size _if_your_machine_doesn't_do_it_automatically_.
+            
+            -l n   tells Jzip there are n lines on your screen.
+            -c n   tells Jzip there are n columns on your screen.
+            -r n   tells Jzip how big of a right margin to use.  The
+                   default is none, but if words get chopped off on the
+                   edges of the screen instead of wrap, set this to a
+                   higher number, like 5.
+            -t n   tells Jzip to leave n lines as a top margin.
+
+        3.1.2 Setting the size of the command history
+
+            -k n   tells Jzip to use n bytes to keep track of the the
+                   commands you have previously typed.  The minimum
+                   is 1024 bytes(1K), and the maximum is 16384 bytes
+                   (16K).  For information on how to use the command
+                   history, see section 3.2.
+
+        3.1.3 Getting version information
+
+            -v     tells Jzip to print a short blurb about the current
+                   version.
+
+        3.1.4 Using STRICTZ and why you would want to
+
+            -s n   The valid values for n are:
+                   0:  no strict checking
+                   1:  report only the first occurance of an error
+                   2:  report all occurances of an error
+                   3:  exit after any error
+
+                   STRICTZ is a method of reporting errors found in
+                   Zcode at execution time.  This mechanism can be very
+                   useful to Inform developers to let them know when they
+                   have bugs in their code.
+
+        3.1.5 DOS only features
+            
+            Monochrome mode
+            -m     tells Jzip to run in black and white mode.
+
+        3.2 Using the command history buffer & what it is.
+
+            The command history buffer of Jzip is a small portion of
+            memory used to store your previous commands.  You can
+            easily access your previous commands and edit them, and
+            submit them as new commands.  This is a handy feature,
+            especially to correct simple spelling mistakes.
+
+        3.2.1 Under DOS
+
+            At the moment, DOS has the most comprehensive set of 
+            editing keys.  Here is a list of them and their function:
+  
+            left arrow       - move one character to the left
+            right arrow      - move one character to the right
+            ctrl+left arrow  - move one word to the left
+            ctrl+right arrow - move one word to the right
+            home             - move to beginning of line
+            end              - move to end of line
+            backspace        - delete character to the left of the cursor
+            delete           - delete character below cursor
+            cursor up        - get previous command
+            cursor down      - get next command
+            page up          - get "oldest" command
+            page down        - display blank prompt (clears current line)
+            esc              - display blank prompt (clears current line)
+
+        3.2.2 Under UNIX/Atari ST
+            
+            These are the editing key under UNIX and Atari ST and their
+            functions:
+            
+            left arrow       - move one character to the left
+            right arrow      - move one character to the right
+            backspace        - delete character to the left of the cursor
+            cursor up        - get previous command
+            cursor down      - get next command
+
+        3.3 Using the INFOCOM_PATH environment variable
+
+            Jzip has one environment variable associated with it called
+            INFOCOM_PATH.  If Jzip cannot find the gamefile that you
+            specified on the command line, it will sequentially search
+            every directory in this path for the gamefile to play.
+
+        3.3.1 Under DOS
+            
+            To use this variable under DOS, add a line that looks 
+            similar to the following one to your AUTOEXEC.BAT file.
+            Of course, you will need to adjust it to point to the
+            directories where your game files are!
+
+            SET INFOCOM_PATH=D:\IF\LTOI1;D:\IF\LTOI2;D:\IF\INFORM;
+
+        3.3.2 Under UNIX
+           
+            Under UNIX, you need to set up your default shell 
+            initialization file to search in the right places.
+            For csh and tcsh, you would edit your .cshrc / .tcshrc
+            file to include the following:
+
+            setenv INFOCOM_PATH /usr/games/zcode:/usr/users/jholder/zcode
+
+            No matter which shell you use (which may mean you need
+            to use set INFOCOM_PATH=/usr/games/zcode), you need to 
+            seperate multiple directories with a colon(:).
+
+        3.3.3 Under Atari ST
+
+            I'm not sure, but I assume you would use the same process as
+            you use for UNIX under MiNT.
+        
+        3.4 Portable Save Game files
+
+        3.4.1 Quetzal
+
+            Jzip now supports the Quetzel portable save file format. 
+            This means that save files made with Jzip can be used
+            by any other Zmachine interpreter that supports this
+            standard.  
+
+        3.4.2 Old Jzip Portable Save files
+
+            If you have old Jzip save game files, you
+            will need to comment out the "USE_QUETZAL" line in
+            ztypes.h and recompile Jzip to reenable Jzip to read 
+            those files.
+
+        3.5 Compressed Game Files
+
+            If Jzip has been builtwith zlib support, Jzip can read
+            zcode files that have been compressed with gzip.  This
+            can save a lot of disk space:
+
+                     304640 Jigsaw.z8
+                     214843 Jigsaw.z8.gz
+
+        ___________________________________________________________          
+
+        4.0 Utilities for Jzip
+
+        4.1 JZexe - making stand-alone Infocom-format games for MS-DOS
+
+            JZexe by Magnus Olsson (mol@df.lth.se) - see JZexe.txt
+
+        4.2 ckifzs - This executable checks the validity of Quetzal
+            save files, and is included with the permission of Martin
+            Frost.
+
+        ___________________________________________________________
+
+        5.0 Building Jzip
+
+     ------------------------
+     This section is undergoing updates.  The source tree now is 
+     different and these instructions may not do what you want.
+     Email for help.
+     ------------------------
+
+        5.1 UNIX / BeOS
+
+            Copy the file unix.mak to the name Makefile.  Look at the 
+            makefile and set the flags as indicated for the type of 
+            system you have. At the moment, JZIP is known to compile 
+            on SunOS, Solaris, HPUX, AIX, NeXT MACH, DEC OSF, Irix, 
+            BeOS and Linux.
+        
+            Now type `make`.  If the compile doesn't happen right, edit 
+            the Makefile and change the "-DPOSIX" to either "-DSYSTEM_FIVE" 
+            or "-DBSD".  Ask your system administrator if you are not sure
+            which flavour of UNIX you are running.  If you still are 
+            getting errors, try changing "-ltermcap" to "-lcurses" on 
+            the LIBS line of the Makefile.  If it still doesn't work, 
+            get help from a friend or email me.
+
+            If your terminal can understand ANSI escape sequences, 
+            (a la the Linux console), you may wish to add "-DHARD_COLORS" 
+            to the CFLAGS line.
+        
+        5.2 DOS (& windows, I suppose...)
+        
+            Borland C:
+                copy bcc.mak makefile
+                make
+            
+            Turbo C: 
+                Start the development environment, and close all 
+                files and projects.  Open the "jzip.prj" project 
+                and compile. (Made with TC 3.0) (you may need to 
+                change the default directories to coincide with 
+                your Turbo C installation)
+        
+        5.3 Atari ST
+
+            The Makefile is atari.mak, and is targetted at GNU C.
+            Likely you will get odd results by trying to compile the
+            code with Borland TurboC or PureC.
+
+        5.4 Bugs
+
+            Please report bugs and portability bugs to the author.
+
+        ___________________________________________________________
+
+        6.0 Known Bugs
+
+	    - At the moment, I believe everything works as 
+              advertised.  Please mail me when (not if) you find
+              bugs.
+
+        ___________________________________________________________
+                
+        7.0 Credits
+
+            For this release, I offer my most profound thanks to
+            Zarf (Andrew Plotkin) for the ZSTRICT code and Martin
+            Frost for the Quetzal code.
+
+            My sincere thanks also go to John Menicelli, Dancer, 
+            Magnus Olsson, Andrew S. Benham, Mark Phillips,
+            and Michael Phillips for help and bug fixes for past
+            releases, and as always, to all the readers of 
+            rec.arts.int-fiction and the users of Jzip who have sent
+            in bug reports and questions.
+
+        ___________________________________________________________
+
+        8.0 License Agreement / Disclaimer
+
+          See License.txt, or run jzip -z
+

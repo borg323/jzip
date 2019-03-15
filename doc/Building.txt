@@ -1,0 +1,41 @@
+
+/* $Id: Building.txt,v 1.2 2000/10/05 16:29:32 jholder Exp $ */
+
+/* This document is a work in progress. It is not complete.... */
+
+How to build Jzip...
+
+These instructions and this directory layout are new with Jzip 2.1.
+If they don't work for you, let us know.
+
+Port maintainers:
+  UNIX, BeOS       :  John Holder (j-holder@home.com)
+  DOS w/ Borland C :   "     "           "
+  DOS w/ MS Quick C:  John Kennedy (jwkenned@bellatlantic.net)
+  OS/2             :  John Kennedy (jwkenned@bellatlantic.net)
+  Atari            :  Used to be Dancer.  Until someone with an Atari
+                      comes along, it is John Holder (j-holder@home.com)
+
+UNIX, BeOS:
+cp unixio.mak Makefile
+--edit makefile for your UNIX per comments in makefile--
+make 
+
+
+DOS w/ Borland C:
+copy bccio.mak Makefile
+make
+
+
+Atari (MiNT, TOS):
+cp atari.mak Makefile
+make 
+
+
+DOS w/ MS Quick C:
+??
+
+
+OS/2:
+??
+

@@ -1,0 +1,148 @@
+
+/* $Id: History.txt,v 1.2 2000/10/05 16:29:32 jholder Exp $ */
+
+Jzip - Infocom Z-code Interpreter Program     V2.1
+-----------------------------------------------------
+Author: John Holder (j-holder@home.com)
+Based on sources by Mark Howell & Olaf 'Olsen' Barthel
+
+       This file contains a history of changes to the code base of Jzip.
+
+Known Issues:
+        - something is causing the comp2000 game "And the Waves Choke the Wind"
+          by Gunther Schmidl to print text incorrectly. Finding and fixing
+          this bug is top priority.
+        - @aread/@sread is not quite up to spec.
+        - adding support for Unicode opcodes/table per spec 1.0
+          (currently, the hooks are in to look up the address of the table.
+           nothing is done with it yet.)
+
+Release 2.1, 04-Oct-2000
+        - fixed bug in nested/redirected output streams when dealing w/ chars 
+          outside the normal ASCII range (ie, ISO-Latin1).  This was causing
+          the German translation of "Bear's Night Out" (bearg.z5) to display
+          upside-down '?' instead of German eszett in some places.
+        - renamed all opcode routines to z_opcodename to match functionality
+          to Spec 1.0 more easily.
+
+Release 2.1, 29-Jun-2000
+
+        - NOW SPEC 1.0 COMPLIANT
+        - fixed logical and arithmetic shift per spec 1.0 
+        - fixed probelems with div and mod per spec 1.0 
+        - rewrote much of property.c to handle 64 properties per spec 1.0 
+        - fixed nested/redirected output streams per spec 1.0 (Xzip derived)
+        - added support for extended load/save opcodes per spec 1.0 
+        - added support for Quetzal portable save files (from Martin Frost)
+               *** NOTE ***  Old save game files are now incompatible.
+        - added ckifzs utility - checks if quetzal file is valid.
+          improved to be more robust by John Kennedy.
+        - added support for STRICTZ error checking (Xzip derived & extended)
+        - @get_prop_len 0 returns zero per zmachine mailing list message
+          from Graham.
+        - Jzip's license is now very much less restrictive.
+        - Added support for OS/2 and MS Quick C(DOS) (Thanks John Kennedy)
+        - Can turn on Tandy bit (Thanks John Kennedy)
+        - Can read Zcode files that have been compressed with gzip when
+          built with -DUSE_ZLIB.  Requires the free Zlib, see
+          http://www.cdrom.com/pub/infozip/zlib/
+
+Release 2.0.1g, 5-Dec-1995:
+
+        - fixed silly error I introduced in osdepend.c (the set_colours bug)
+        - fixed extra include in fileio.c (string.h doesn't need double
+          inclusion)
+        - fixed "magic" declaration that caused problems with jzexe.c on
+          RISC boxen.
+
+Release 2.0.1g:
+
+        - John Menichelli(menichel@pixi.com) has added text editing 
+          features and a command history to bccio.c (the Borland
+          DOS interface).  Thanks, John!
+        - With some termcap hacking and John Menichelli's code, I added
+          text editing and command history functionality to the UNIX
+          ports of Jzip.
+        - At the moment, the DOS and UNIX versions now have the correct 
+          timed read key interval of 1/10th of a second, instead of the 
+          1 second interval that used to be there.
+        - Dancer (dancer@gateway1.brisnet.org.au) has added an Atari ST
+          port of Jzip to the distribution.  He has also got the command
+          history and editing features working.  If you have problems
+          with this port, contact him.  Better documentation is in Jzip.txt
+        - You now can create standalone DOS executable files with
+          Magnus Olsson's utility JZexe, which he has kindly added to
+          the Jzip distribution.
+
+Release 2.0.1f:
+
+        - Jzip now supports a default set of paths where it will look for
+          a game file if it isn't in the current directory.  Set the
+          environment variable INFOCOM_PATH to the directory or list of
+          directories that contain your Zcode story files. For example:
+          UNIX:
+            setenv INFOCOM_PATH /usr/games/zfiles/:/usr/jholder/zfiles
+          DOS:
+            set INFOCOM_PATH=d:\infocom\ltoi1;d:\infocom\ltoi2;
+          Suggested by Michael Phillips, (msphil@aardvark.cc.wm.edu).
+        - Jzip has a manpage!  Written by Michael Phillips, I will edit
+          and maintain it from now on.  Thanks, Mike!
+        - UNIX versions no longer die a horrible death and dump core,
+          cause bus errors, or put the screen in an incorrect mode when
+          attempting to run an invalid file.
+	  
+Release 2.0.1e:
+
+	- Jzip's UNIX distribution is now even more portable!  Some
+	  problems with SunOS HP-UX, and Irix have been resolved, all
+	  thanks to Mark Phillips (msp@bnr.co.uk).  As you port Jzip
+	  to different versions of UNIX, please tell me what platform
+	  and version of UNIX you are running, and send me a copy of
+	  your makefile so I can document it. 
+	- Jzip save files are now PORTABLE between big-endian and little-
+	  endian machines!  Once again, thanks to Mark Phillips!  Now
+	  you can play at home on your PC, upload your save file to work,
+	  and play on your lunch hour! (Note: The 27-sept-1995 release
+	  had a typo in the code & this didn't work! Sorry!)
+	  *** NOTE ***  Old save game files are now incompatible on some boxes.
+
+Release 2.0.1d:
+
+       - Jzip properly understand what game you are playing and will
+         "automagically" name your save games files, script files, and
+         record files appropriately.  (ie. if you are playing zork1.dat,
+         your save file is zork1.sav, script file is zork1.scr, and
+         record file is zork1.rec)
+       - The Borland DOS compile now supports color or monochrome
+         mode with the -m command line option.  
+       - Jzip now properly prints menus on the DOS compile.  Thanks
+         for noticing the problem & sending in the fix to Andrew
+         Benham. (A.D.S.Benham@bnr.co.uk)
+
+Release 2.0.1a:
+
+        Jzip is an unofficial compile of Mark Howell's ZIP 
+        interpreter.  Mark has not endorsed this compile, and I haven't
+        asked him to.  Jzip uses ZIP's version 2.0 sources as a base.  
+        Jzip changes ZIP in the following ways:
+
+        on UNIX platforms:
+
+        - Correct handling of the form in Infocom's Bureaucracy
+        - new random function, called zip_random, that generates 
+          numbers that are much more random.  The original random
+          function still works best in DOS, and for now I assume
+          on other platforms as well.  The new one is only compiled
+          in on UNIX platforms.
+
+        on all platforms:
+
+        - The interpreter can now play Inform V8 games, as described
+          by Graham Nelson in Inform 5.5 beta's documentation.  This
+          feature has been tested and it works.  
+
+        The real reason I started Jzip:
+        I didn't like having a program named zip that conflicted with
+        InfoZip's zip.  The rest just snowballed!
+
+

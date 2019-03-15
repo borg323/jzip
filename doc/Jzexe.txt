@@ -1,0 +1,95 @@
+
+/* $Id: Jzexe.txt,v 1.1 2000/06/29 22:50:50 jholder Exp $ */
+
+JZexe - making stand-alone Infocom-format games
+===============================================
+
+JZexe is a small utility program that creates stand-alone
+game files from an Infocom-format story file (created by 
+Infocom or with Inform).
+
+A stand-alone game file is an executable file which
+is run like any other program. It can also be played as
+a normal story file by the JZip interpreter. This is useful
+if you want to run it on a different system than the one
+it was created on.
+
+Command summary
+===============
+
+Suppose that your game's story file is called story.dat
+(Infocom's own story files usually end in .dat, while
+files created by Inform usually end in .z3, .z5 or .z8).
+
+To create a stand-alone excutable, run the command
+
+jzexe story.dat
+
+This will create the executable story.exe (or story under UNIX).
+
+For this to work, the JZip interpreter jzip.exe or jzip must be
+in the current directory.  If it isn't, you can specify it
+as the second command line argument:
+
+jzexe story.dat d:\games\infocom\jzip.exe
+or
+jzexe story.dat ~home/bin/jzip
+
+Finally, if you have transferred the standalone executable
+to a computer that doesn't run that format of executable,
+but that has a JZip interpreter, you can run the game by typing
+
+jzip story.exe
+or
+jzip story
+
+
+A note: JZexe will work even on non MS-DOS machines. You still need to
+have the MS-DOS version of JZip, jzip.exe, available, and of course
+you can't run the resulting .exe file, but it can be handy if, for
+example, you want to create MS-DOS standalone games on a Unix system.
+Or a UNIX executable on an MS-DOS system. 
+
+Reversing the process
+=====================
+
+If you have a standalone executable created with JZexe, you can extract
+the Z code into a story file that can be played with JZip or any other
+Z code interpreter. The command to do this is
+
+jzexe -x game.exe
+
+This will create a file game.z5 (the '5' is the Z code version used by 
+the game; JZip can play versions 3, 5 and 8).
+
+This option is useful if you want to update the executable with a newer
+version of JZip.
+
+
+How it works
+============
+
+JZexe simply concatenates the JZip interpreter with the
+story file and writes it to a .exe file with the same
+name as the story file. It then patches the .exe file so
+that when it is run, the JZip interpreter knows that it
+should read Z code from the executable file and not from 
+a separate story file.
+
+
+The JZip interpreter has been modified so that it contains
+a patch area. This area starts with a "magic" string that is
+used by JZexe to find the patch area. Then follows a flag byte
+and a three-byte offset. 
+
+In the usual JZip interpreter, the flag byte is non-zero.
+When JZip is invoked it checks the flag byte and if it's 
+non-zero the interpreter will load a separate story file as 
+usual.
+
+If the flag byte is zero, the interpreter will read the next
+three bytes as an offset into its own executable file (which
+will not be called jzip.exe but something different). It then
+seeks to this position and starts reading Z code from there.
+
+

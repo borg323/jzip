@@ -1,0 +1,91 @@
+.\" -*- nroff -*-
+.TH JZIP 6 "" "2.1" "John\'s Z-code Interpreter Program"
+.SH NAME
+jzip \- execute Infocom v1-5 and Inform v1-5 & v8 game files
+.SH SYNOPSIS
+.B jzip
+[
+.I options
+]
+.I z-file-name
+.SH DESCRIPTION
+.B jzip
+invokes the Z-code Interpreter.
+.SH REQUIREMENTS
+.B jzip
+will run under most (if not all) flavors of Unix, including AIX, Solaris, 
+SunOS, HP/UX, Linux, Free/NetBSD, IRIX, NeXT Mach, DEC OSF/1, and others.
+.PP
+.SH EDITING
+.PP 
+JZip now supports arrowkey editing in UNIX. 
+.TP
+.I Up/Down 
+selects the previous / next command in history
+.TP
+.I Left/Right
+moves the cursor over the line.
+.TP
+.I Backspace
+deletes
+.TP
+.I Typing
+inserts under the cursor
+.SH OPTIONS
+.TP
+.I -l n
+lines in display
+.TP
+.I -c n
+columns in display
+.TP
+.I -r n
+text right margin (default = 1)
+.TP
+.I -t n
+text top margin (default = 0)
+.TP
+.I -v
+display version information
+.TP
+.I -m
+monochrome mode
+.TP
+.I -y
+set Tandy bit
+.TP
+.I -s n
+zmachine strict level, from 0 (none), 1 (report once, recommended) to 3.
+.SH ENVIRONMENT
+.B jzip
+looks for the environment variable
+.B INFOCOM_PATH
+and will use the path found there to look for the story file specified on
+the command line if the story file cannot be found in the current directory.
+.SH CREDITS
+.B jzip
+is written and maintained by John Holder (j-holder@home.com), based on the
+ZIP v2.0 sources by Mark Howell and Olaf 'Olsen' Barthel.
+.SH AVAILABILITY
+The most recent version of 
+.B jzip
+can be dowanloaded from one of:
+.TP
+http://www.jzip.sourceforge.net/
+.TP
+ftp://ftp.gmd.de/if-archive/infocom/interpreters/zip/
+.SH FILES
+.TP
+.I /usr/games/jzip
+The Z-Code Interpreter Program
+.TP
+.I /usr/lib/games/zfiles
+Recommended location for Zcode files
+.SH RELATED USENET NEWSGROUPS
+.PD 0
+Interactive Fiction (IF) authors should check out 
+.I rec.arts.int-fiction,
+and IF players should check out 
+.I rec.games.int-fiction.
+
+
