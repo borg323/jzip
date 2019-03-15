@@ -259,10 +259,10 @@ int main( int argc, char **argv )
             else                
                coredump( ul2++, uch ); 
          }                      
-         putchar( '\n' );       
          filelen -= cklen;
          cklen = 0;             
 #endif 
+         putchar( '\n' );       
 
          if ( status & GOT_CMEM )
          {
