@@ -352,7 +352,7 @@ void z_throw( zword_t value, zword_t new_fp )
 
    if ( new_fp > fp )
    {
-      fatal( "z_throw(): nonexistant frame" );
+      fatal( "z_throw(): nonexistent frame" );
    }
 #if defined (USE_QUETZAL)
    for ( ; new_fp < frame_count; --frame_count )

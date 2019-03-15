@@ -239,7 +239,7 @@ zbyte_t read_code_byte( void )
    if ( !current_code_cachep )
    {
       fatal
-            ( "read_code_byte(): read from non-existant page!\n\t(Your dynamic memory usage _may_ be over 64k in size!)" );
+            ( "read_code_byte(): read from non-existent page!\n\t(Your dynamic memory usage _may_ be over 64k in size!)" );
    }
 
    return ( current_code_cachep->data[page_offset] );
