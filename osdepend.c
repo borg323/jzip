@@ -89,10 +89,10 @@ static int strictz_error_count[STRICTZ_NUM_ERRORS];
 #if !defined(AMIGA)
 
 /* getopt linkages */
-#if !defined(POSIX)
+#if !defined(HAVE_GETOPT)
 extern int optind;
 extern const char *optarg;
-#endif /* !defined(POSIX) */
+#endif /* !defined(HAVE_GETOPT) */
 extern ZINT16 default_fg, default_bg;
 
 #endif /* !defined(AMIGA) */
