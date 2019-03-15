@@ -856,6 +856,13 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
          }
 */
 
+          else if (c == 27) {
+             ptr1 = ptr2 = end_ptr;
+             curr_char_pos = *read_size = display_command(buffer);
+             tail_col = head_col + *read_size;
+             keyfunc=1;
+         }
+
          /****** Cursor Editing Keys ******/
 
          else if ( c == 0x83 )

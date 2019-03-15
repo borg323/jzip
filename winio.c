@@ -676,7 +676,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
          curr_char_pos = *read_size = display_command( buffer );
          tail_col = head_col + *read_size;
       }
-      else if ( ( c == ( unsigned char ) '\x094' ) || ( c == ( unsigned char ) '\x0bc' ) )
+      else if ( ( c == ( unsigned char ) '\x094' ) || ( c == 27 ) )
       {                         /* PgDn or Esc */
          ptr1 = ptr2 = end_ptr;
          curr_char_pos = *read_size = display_command( buffer );
@@ -696,6 +696,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
             curr_char_pos--;
          }
       }
+#if 0
       else if ( c == ( unsigned char ) '\x0aa' )
       {                         /* Ctrl + Left arrow */
          get_cursor_position( &row, &col );
@@ -714,6 +715,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
             move_cursor( row, ++col );
          }
       }
+#endif
       else if ( c == ( unsigned char ) '\x084' )
       {                         /* Right arrow */
          get_cursor_position( &row, &col );
@@ -725,6 +727,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
             curr_char_pos++;
          }
       }
+#if 0
       else if ( c == ( unsigned char ) '\x0ba' )
       {                         /* Ctrl + Right arrow */
          get_cursor_position( &row, &col );
@@ -749,6 +752,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
             }
          }
       }
+#endif
       else if ( c == ( unsigned char ) '\x092' )
       {                         /* End */
          move_cursor( row, tail_col );
@@ -984,10 +988,12 @@ int read_key( void )
       return ( ( unsigned char ) '\x098' ); /* Home (NW)               */
    else if ( c == 'I' )
       return ( ( unsigned char ) '\x09a' ); /* PgUp (NE)               */
+#if 0
    else if ( c == 's' )
       return ( ( unsigned char ) '\x0aa' ); /* Ctrl + Left Arrow       */
    else if ( c == 't' )
       return ( ( unsigned char ) '\x0ba' ); /* Ctrl + Right Arrow      */
+#endif
    else if ( c >= ';' && c <= 'D' ) /* Function keys F1 to F10 */
       return ( ( c - ';' ) + ( unsigned char ) '\x085' );
 
