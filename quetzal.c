@@ -77,7 +77,7 @@ typedef unsigned long ul_t;
  */
 
 #ifdef USE_ZLIB
-int save_quetzal( FILE * sfp, gzFile * gfp )
+int save_quetzal( FILE * sfp, gzFile gfp )
 #else
 int save_quetzal( FILE * sfp, FILE * gfp )
 #endif
@@ -294,7 +294,7 @@ static int read_long( FILE * fp, ul_t * result )
 #define GOT_ERROR	0x80
 
 #ifdef USE_ZLIB
-int restore_quetzal( FILE * sfp, gzFile * gfp )
+int restore_quetzal( FILE * sfp, gzFile gfp )
 #else
 int restore_quetzal( FILE * sfp, FILE * gfp )
 #endif

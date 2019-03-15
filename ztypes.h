@@ -708,8 +708,8 @@ void z_storew( zword_t, zword_t, zword_t );
 /* quetzal.c */
 
 #ifdef USE_ZLIB
-int save_quetzal( FILE *, gzFile * );
-int restore_quetzal( FILE *, gzFile * );
+int save_quetzal( FILE *, gzFile );
+int restore_quetzal( FILE *, gzFile );
 #else
 int save_quetzal( FILE *, FILE * );
 int restore_quetzal( FILE *, FILE * );

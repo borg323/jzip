@@ -39,7 +39,7 @@
 extern int GLOBALVER;
 
 #ifdef USE_ZLIB
-static gzFile *gfp = NULL;      /* Zcode file pointer */
+static gzFile gfp = NULL;      /* Zcode file pointer */
 #else
 static FILE *gfp = NULL;        /* Zcode file pointer */
 #endif
