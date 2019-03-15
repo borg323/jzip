@@ -195,7 +195,9 @@ void open_story( const char *storyname )
       /* standalone game; offset to story start is saved in low-endian */
       /* format after magic string */
       story_offset =
-            magic[MAGIC_END + 1] + magic[MAGIC_END + 2] * 256L + magic[MAGIC_END + 3] * 65536L;
+            (unsigned char) magic[MAGIC_END + 1] + 
+	    (unsigned char) magic[MAGIC_END + 2] * 256L + 
+	    (unsigned char) magic[MAGIC_END + 3] * 65536L;
    }
 
    strcpy( tmp, storyname );    
