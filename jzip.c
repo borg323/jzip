@@ -67,11 +67,11 @@ int main( int argc, char *argv[] )
 
    ( void ) interpret(  );
 
-   unload_cache(  );
-
    close_story(  );
 
    close_script(  );
+
+   unload_cache(  );
 
    reset_screen(  );
 
