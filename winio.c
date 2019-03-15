@@ -1091,7 +1091,7 @@ int check_font_char( int c )
    int supported = 0;
 
    font.cbSize = sizeof(CONSOLE_FONT_INFOEX);
-   GetCurrentConsoleFontEx(GetStdHandle (STD_OUTPUT_HANDLE), 0, &font); 
+   GetCurrentConsoleFontEx(GetStdHandle (STD_OUTPUT_HANDLE), 0, &font);
 
    memset(&lf, 0, sizeof(lf));
    lf.lfHeight = font.dwFontSize.Y;
@@ -1110,7 +1110,7 @@ int check_font_char( int c )
          for (x = 0; x < set->cRanges; x++)
          {
             if (c >= set->ranges[x].wcLow &&
-                c < (set->ranges[x].wcLow + set->ranges[x].cGlyphs)) 
+                c < (set->ranges[x].wcLow + set->ranges[x].cGlyphs))
             {
                supported = 1;
                break;

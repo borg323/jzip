@@ -36,6 +36,7 @@
 
 #include "ztypes.h"
 #include <unistd.h>
+#include <wctype.h>
 
 #if defined(BSD)
 #include <sgtty.h>
@@ -783,7 +784,7 @@ void add_command( char *buffer, int size )
 int input_line( int buflen, char *buffer, int timeout, int *read_size, int start_col )
 {
    int c, col;
-   int init_char_pos, curr_char_pos;
+   int /*init_char_pos,*/ curr_char_pos;
    int loop, tail_col;
    int keyfunc = 0;
 
@@ -799,7 +800,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
    head_col = start_col;
    tail_col = start_col + *read_size;
 
-   init_char_pos = curr_char_pos = col - start_col;
+   /*init_char_pos =*/ curr_char_pos = col - start_col;
 
    ptr1 = ptr2 = end_ptr;
 
