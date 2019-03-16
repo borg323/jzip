@@ -953,51 +953,59 @@ int timed_read_key( int timeout )
 int read_key( void )
 {
    int c;
+   DWORD mode, ct;
+   INPUT_RECORD event;
+
+   GetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), &mode );
+   SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), ENABLE_PROCESSED_INPUT );
 
  read_key_top:
-   c = _getwch(  );
-   if ( c < 32 && !( c == 0 || c == 8 || c == 13 || c == 27) )
-      goto read_key_top;
 
-   if ( c != '\0' && c != ( unsigned char ) '\x0e0' )
+   do
+     ReadConsoleInput( GetStdHandle( STD_INPUT_HANDLE ), &event, 1, &ct );
+   while ( event.EventType != KEY_EVENT || !event.Event.KeyEvent.bKeyDown );
+
+   c = event.Event.KeyEvent.uChar.UnicodeChar;
+
+   if ( c )
    {
-      if ( c == '\x07f' )
-      {
+      if ( c < 32 && !( c == 8 || c == 13 || c == 27 ) )
+         goto read_key_top;
+
+      if ( c == 0x7f )
          c = '\b';
-      }
+
+      SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), mode );
       return ( translate_to_zscii( c ) );
    }
 
-   c = _getwch(  );
+   c = event.Event.KeyEvent.wVirtualKeyCode;
 
-   if ( c == 'H' )
-      return ( ( unsigned char ) '\x081' ); /* Up arrow                */
-   else if ( c == 'P' )
-      return ( ( unsigned char ) '\x082' ); /* Down arrow              */
-   else if ( c == 'K' )
-      return ( ( unsigned char ) '\x083' ); /* Left arrow              */
-   else if ( c == 'M' )
-      return ( ( unsigned char ) '\x084' ); /* Right arrow             */
-   else if ( c == 'O' )
-      return ( ( unsigned char ) '\x092' ); /* End (SW)                */
-   else if ( c == 'Q' )
-      return ( ( unsigned char ) '\x094' ); /* PgDn (SE)               */
-   else if ( c == 'S' )
-      return ( ( unsigned char ) '\x096' ); /* Delete                  */
-   else if ( c == 'G' )
-      return ( ( unsigned char ) '\x098' ); /* Home (NW)               */
-   else if ( c == 'I' )
-      return ( ( unsigned char ) '\x09a' ); /* PgUp (NE)               */
-#if 0
-   else if ( c == 's' )
-      return ( ( unsigned char ) '\x0aa' ); /* Ctrl + Left Arrow       */
-   else if ( c == 't' )
-      return ( ( unsigned char ) '\x0ba' ); /* Ctrl + Right Arrow      */
-#endif
-   else if ( c >= ';' && c <= 'D' ) /* Function keys F1 to F10 */
-      return ( ( c - ';' ) + ( unsigned char ) '\x085' );
+   if ( c == 0x26 )
+      c = 0x81;                        /* Up arrow                */
+   else if ( c == 0x28 )
+      c = 0x82;                        /* Down arrow              */
+   else if ( c == 0x25 )
+      c = 0x83;                        /* Left arrow              */
+   else if ( c == 0x27 )
+      c = 0x84;                        /* Right arrow             */
+   else if ( c == 0x23 )
+      c= 0x92;                         /* End (SW)                */
+   else if ( c == 0x22 )
+      c = 0x94;                        /* PgDn (SE)               */
+   else if ( c == 0x2e )
+      c = 0x96;                        /* Delete                  */
+   else if ( c == 0x24 )
+      c = 0x98;                        /* Home (NW)               */
+   else if ( c == 0x21 )
+      c = 0x9a;                        /* PgUp (NE)               */
+   else if ( c >= 0x70 && c <= 0x7b )
+      c += 21;                         /* Function keys F1 to F12 */
+   else
+      goto read_key_top;
 
-   return ( 0 );
+   SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), mode );
+   return c;
 
 }                               /* read_key */
 
