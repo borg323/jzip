@@ -1213,7 +1213,7 @@ void z_check_unicode( zword_t c )
    }
    else
    {
-      if ( isprint( c ) )
+      if ( c < 0x80 && isprint( c ) )
          f = 3;
    }
    store_operand( f );

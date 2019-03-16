@@ -1140,7 +1140,7 @@ void script_char( int c )
    /* If scripting file is open, we are in the text window and the character is
     * printable then write the character */
 
-   if ( scripting == ON && scripting_disable == OFF && ( c == '\n' || ( isprint( c ) ) ) )
+   if ( scripting == ON && scripting_disable == OFF && ( c == '\n' || ( c < 0x80 && isprint( c ) ) ) )
    {
       putc( c, sfp );
    }
