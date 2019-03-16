@@ -1119,6 +1119,8 @@ static int read_key( int mode )
          tputs( TE, 1, outc );
          exit( 0 );
       }                      /* CTRL-D (EOF) */
+      else if ( !unicode && ct > 1 && in[0] & 0xe0 )
+         return '?';
       else if ( ct == 2 && ( in[0] & 0xe0 ) == 0xc0 && ( in[1] & 0xc0 ) == 0x80 )
       {
          int u = ( ( in[0] & 0x1f ) << 6 ) | ( in[1] & 0x3f );

@@ -493,7 +493,16 @@ void write_zchar( int c )
    }
    else if ( c > 154 )
    {
-      write_char( translate_from_zscii( c ) );
+      if ( unicode )
+         write_char( translate_from_zscii( c ) );
+      else
+      {
+         char *s = "?";
+         if ( !h_unicode_table && c < 224 )
+            s = zscii2txt[c - 155];
+         while ( *s )
+            write_char( *s++ );
+      }
    }
    else
    {
@@ -1193,9 +1202,19 @@ void z_print_unicode( zword_t c )
 void z_check_unicode( zword_t c )
 {
    int f = 0;
-   if ( check_font_char( c) )
-     f |= 1;
-   if ( c == '?' || translate_to_zscii( c ) != '?')
-     f |= 2;
+   if ( unicode )
+   {
+      if ( check_font_char( c ) )
+      {
+        f = 1;
+        if ( c == '?' || translate_to_zscii( c ) != '?')
+           f = 3;
+      }
+   }
+   else
+   {
+      if ( isprint( c ) )
+         f = 3;
+   }
    store_operand( f );
 }                               /* z_check_unicode */

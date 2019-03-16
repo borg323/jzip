@@ -142,23 +142,23 @@ void process_arguments( int argc, char *argv[] )
 
 #ifdef STRICTZ                  
 #if defined OS2 || defined __MSDOS__ 
-#define GETOPT_SET "gbomvzhy?l:c:k:r:t:s:" 
+#define GETOPT_SET "ugbomvzhy?l:c:k:r:t:s:"
 #elif defined TURBOC            
-#define GETOPT_SET   "bmvzhy?l:c:k:r:t:s:" 
+#define GETOPT_SET   "ubmvzhy?l:c:k:r:t:s:"
 #elif defined HARD_COLORS       
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:s:f:b:" 
+#define GETOPT_SET    "umvzhy?l:c:k:r:t:s:f:b:"
 #else 
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:s:" 
+#define GETOPT_SET    "umvzhy?l:c:k:r:t:s:"
 #endif 
 #else 
 #if defined OS2 || defined __MSDOS__ 
-#define GETOPT_SET "gbomvzhy?l:c:k:r:t:" 
+#define GETOPT_SET "ugbomvzhy?l:c:k:r:t:"
 #elif defined TURBOC            
-#define GETOPT_SET   "bmvzhy?l:c:k:r:t:" 
+#define GETOPT_SET   "ubmvzhy?l:c:k:r:t:"
 #elif defined HARD_COLORS       
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:f:b:" 
+#define GETOPT_SET    "umvzhy?l:c:k:r:t:f:b:"
 #else 
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:" 
+#define GETOPT_SET    "umvzhy?l:c:k:r:t:"
 #endif 
 #endif 
    while ( ( c = getopt( argc, argv, GETOPT_SET ) ) != EOF )
@@ -239,6 +239,9 @@ void process_arguments( int argc, char *argv[] )
             monochrome = 1;
             break;
 #endif 
+         case 'u':
+            unicode = 0;
+            break;
 #if defined TURBOC              
          case 'b':
             bigscreen = 1;
@@ -305,7 +308,8 @@ void process_arguments( int argc, char *argv[] )
       fprintf( stdout, "\t-b n background color (-1 to ignore bg color (try it on an Eterm))\n" );
       fprintf( stdout, "\t     Black=0 Red=1 Green=2 Yellow=3 Blue=4 Magenta=5 Cyan=6 White=7\n" );
 #endif
-      fprintf( stdout, "\t-m   force monochrome mode\n" ); 
+      fprintf( stdout, "\t-m   force monochrome mode\n" );
+      fprintf( stdout, "\t-u   disable unicode input and output\n" );
 #if defined __MSDOS__ || defined OS2 
       fprintf( stdout, "\t-b   force black-and-white mode\n" ); 
       fprintf( stdout, "\t-o   force color mode\n" ); 

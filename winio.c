@@ -982,6 +982,8 @@ int read_key( void )
          c = '\b';
 
       SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), mode );
+      if ( !unicode && c >= 0xa0 )
+         return '?';
       return ( translate_to_zscii( c ) );
    }
 

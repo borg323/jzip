@@ -46,6 +46,18 @@ unsigned short zscii2latin1[69] =  {
    0xa3, 0x153, 0x152, 0xa1, 0xbf
 };
 
+char *zscii2txt[69] =  {
+   "ae", "oe", "ue", "Ae", "Oe", "Ue", "ss", ">>",
+   "<<", "e", "i", "y", "E", "I", "a", "e",
+   "i", "o", "u", "y", "A", "E", "I", "O",
+   "U", "Y", "a", "e", "i", "o", "u", "A",
+   "E", "I", "O", "U", "a", "e", "i", "o",
+   "u", "A", "E", "I", "O", "U", "a", "A",
+   "o", "O", "a", "n", "o", "A", "N", "O",
+   "ae", "AE", "c", "C", "th", "th", "Th", "Th",
+   "L", "oe", "OE", "!", "?"
+};
+
 /* Game header data */
 
 zbyte_t h_type = 0;
@@ -98,6 +110,10 @@ int top_margin = DEFAULT_TOP_MARGIN;
 char bigscreen = 0;
 char monochrome = 0;
 int hist_buf_size;
+
+/* Unicode usage */
+
+char unicode = 1;
 
 /* Current window data */
 

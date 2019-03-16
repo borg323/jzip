@@ -524,10 +524,12 @@ extern unsigned short *status_line;
 extern char lookup_table[3][26];
 
 extern char monochrome;
+extern char unicode;
 extern int hist_buf_size;
 extern char bigscreen;
 
 extern unsigned short zscii2latin1[69];
+extern char *zscii2txt[69];
 
 #ifdef STRICTZ
 
