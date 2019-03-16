@@ -1206,9 +1206,10 @@ void z_check_unicode( zword_t c )
    {
       if ( check_font_char( c ) )
       {
-        f = 1;
-        if ( c == '?' || translate_to_zscii( c ) != '?')
-           f = 3;
+         if (unicode == 2)
+            f = 1;
+         if ( c == '?' || translate_to_zscii( c ) != '?')
+            f = 3;
       }
    }
    else

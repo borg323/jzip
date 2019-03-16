@@ -111,9 +111,9 @@ char bigscreen = 0;
 char monochrome = 0;
 int hist_buf_size;
 
-/* Unicode usage */
+/* Unicode usage (0: disable; 1: zscii only; 2: full) */
 
-char unicode = 1;
+char unicode = 2;
 
 /* Current window data */
 
