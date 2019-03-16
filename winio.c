@@ -763,8 +763,11 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
          move_cursor( row, head_col );
          curr_char_pos = init_char_pos;
       }
+
       else if ( c == ( unsigned char ) '\x096' )
       {                         /* Delete */
+// ZSCII 0x96 is keypad 5, not delete.
+#if 0
          if ( curr_char_pos < *read_size )
          {
             get_cursor_position( &row, &col );
@@ -790,7 +793,10 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
             /* Restores the cursor position */
             move_cursor( row, col );
          }
-
+#endif
+      }
+      else if ( c >= 133 && c <= 144 )
+      {                         /* F1 - F12 */
       }
       else if ( c == '\b' )
       {                         /* Backspace */
@@ -993,8 +999,8 @@ int read_key( void )
       c= 0x92;                         /* End (SW)                */
    else if ( c == 0x22 )
       c = 0x94;                        /* PgDn (SE)               */
-   else if ( c == 0x2e )
-      c = 0x96;                        /* Delete                  */
+   else if ( c == 0x0c )
+      c = 0x96;                        /* Keypad 5                */
    else if ( c == 0x24 )
       c = 0x98;                        /* Home (NW)               */
    else if ( c == 0x21 )
