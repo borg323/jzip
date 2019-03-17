@@ -180,7 +180,7 @@ void unload_cache( void )
 
    /* Free cache memory */
 
-   for ( cachep = cache; cachep->flink != NULL; cachep = nextp )
+   for ( cachep = cache; cachep != NULL; cachep = nextp )
    {
       nextp = cachep->flink;
       free( cachep );
