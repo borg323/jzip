@@ -668,6 +668,7 @@ void write_char( int c )
       if ( c )
       {
          line[line_pos++] = c;
+         line[line_pos] = 0;
 
          /* Wrap the line when there is a newline in the stream. */
          cp = strrushort( line, 13 );

@@ -315,7 +315,6 @@ int interpret(  )
                   sound( count, operand );
                   break;
                case 0x36:
-flush_buffer(FALSE);
                   z_read_char( count, operand );
                   break;
                case 0x37:
