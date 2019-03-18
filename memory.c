@@ -126,7 +126,35 @@ void load_cache( void )
 
    /* Allocate memory for undo */
 
-   undo_datap = ( zbyte_t * ) malloc( data_size );
+   if ( undo_size > 0 )
+   {
+      undo_stack = ( zbyte_t ** ) malloc( undo_size * sizeof( zbyte_t * ) );
+      if ( undo_stack )
+      {
+         undo_datap = ( zbyte_t ** ) malloc( undo_size * sizeof( zbyte_t * ) );
+      }
+      if ( undo_datap )
+      {
+         for (i = 0; i < undo_size; i++ )
+         {
+            undo_stack[i] = ( zbyte_t * ) malloc( sizeof( stack ) );
+            undo_datap[i] = ( zbyte_t * ) malloc( h_restart_size );
+            if ( !undo_stack[i] || !undo_datap[i] )
+            {
+               free( undo_stack[i] );
+               free( undo_datap[i] );
+               break;
+            }
+         }
+         undo_size = i;
+         if ( undo_size == 0 )
+         {  /* clear undo_datap that is used as a flag for undo availability */
+            free( undo_datap );
+            undo_datap = NULL;
+         }
+      }
+   }
+
 
    /* Allocate cache pages and initialise them */
 
@@ -176,6 +204,16 @@ void unload_cache( void )
    free( line );
    free( status_line );
    free( datap );
+   if ( undo_datap )
+   {
+      int i;
+      for (i = 0; i < undo_size; i++ )
+      {
+         free( undo_stack[i] );
+         free( undo_datap[i] );
+      }
+   }
+   free( undo_stack );
    free( undo_datap );
 
    /* Free cache memory */

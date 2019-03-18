@@ -142,23 +142,23 @@ void process_arguments( int argc, char *argv[] )
 
 #ifdef STRICTZ                  
 #if defined OS2 || defined __MSDOS__ 
-#define GETOPT_SET "gbomvzhy?l:c:k:r:t:s:u:"
+#define GETOPT_SET "gbomvzhy?l:c:k:r:t:s:u:d:"
 #elif defined TURBOC            
-#define GETOPT_SET   "bmvzhy?l:c:k:r:t:s:u:"
+#define GETOPT_SET   "bmvzhy?l:c:k:r:t:s:u:d:"
 #elif defined HARD_COLORS       
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:s:f:b:u:"
+#define GETOPT_SET    "mvzhy?l:c:k:r:t:s:f:b:u:d:"
 #else 
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:s:u:"
+#define GETOPT_SET    "mvzhy?l:c:k:r:t:s:u:d:"
 #endif 
 #else 
 #if defined OS2 || defined __MSDOS__ 
-#define GETOPT_SET "gbomvzhy?l:c:k:r:t:u:"
+#define GETOPT_SET "gbomvzhy?l:c:k:r:t:u:d:"
 #elif defined TURBOC            
-#define GETOPT_SET   "bmvzhy?l:c:k:r:t:u:"
+#define GETOPT_SET   "bmvzhy?l:c:k:r:t:u:d:"
 #elif defined HARD_COLORS       
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:f:b:u:"
+#define GETOPT_SET    "mvzhy?l:c:k:r:t:f:b:u:d:"
 #else 
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:u:"
+#define GETOPT_SET    "mvzhy?l:c:k:r:t:u:d:"
 #endif 
 #endif 
    while ( ( c = getopt( argc, argv, GETOPT_SET ) ) != EOF )
@@ -242,6 +242,9 @@ void process_arguments( int argc, char *argv[] )
          case 'u':
             unicode = atoi( optarg );
             break;
+         case 'd':
+            undo_size = atoi( optarg );
+            break;
 #if defined TURBOC              
          case 'b':
             bigscreen = 1;
@@ -309,7 +312,7 @@ void process_arguments( int argc, char *argv[] )
       fprintf( stdout, "\t     Black=0 Red=1 Green=2 Yellow=3 Blue=4 Magenta=5 Cyan=6 White=7\n" );
 #endif
       fprintf( stdout, "\t-m   force monochrome mode\n" );
-      fprintf( stdout, "\t-u   unicode use (default = 2) (0: disable; 1: zscii only; 2: full)\n" );
+      fprintf( stdout, "\t-u n unicode use (default = 2) (0: disable; 1: zscii only; 2: full)\n" );
 #if defined __MSDOS__ || defined OS2 
       fprintf( stdout, "\t-b   force black-and-white mode\n" ); 
       fprintf( stdout, "\t-o   force color mode\n" ); 
@@ -317,6 +320,7 @@ void process_arguments( int argc, char *argv[] )
 #elif defined TURBOC            
       fprintf( stdout, "\t-b   run in 43/50 line EGA/VGA mode\n" ); 
 #endif 
+      fprintf( stdout, "\t-d n size of undo buffer (default = %d)\n", undo_size );
 
 #ifdef STRICTZ
       fprintf( stdout, "\t-s n stricter error checking (default = %d) (0: none; 1: report 1st\n",

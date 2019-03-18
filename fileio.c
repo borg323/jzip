@@ -60,8 +60,7 @@ char script_name[Z_FILENAME_MAX + Z_PATHNAME_MAX + 1] = "story.scr";
 char record_name[Z_FILENAME_MAX + Z_PATHNAME_MAX + 1] = "story.rec";
 char auxilary_name[Z_FILENAME_MAX + Z_PATHNAME_MAX + 1] = "story.aux";
 
-static int undo_valid = FALSE;
-static zword_t undo_stack[STACK_SIZE];
+static int undo_valid = 0;
 
 static int script_file_valid = FALSE;
 
@@ -724,7 +723,6 @@ void z_save_undo( void )
    {
       /* Save the undo data and return success */
       save_restore( NULL, UNDO_SAVE );
-      undo_valid = TRUE;
       store_operand( 1 );
    }
    else
@@ -751,18 +749,10 @@ void z_restore_undo( void )
    if ( undo_datap != NULL )
    {
       /* If no undo save done then return an error */
-      if ( undo_valid != FALSE )
+      if ( undo_valid > 0 )
       {
          /* Restore the undo data and return success */
          save_restore( NULL, UNDO_RESTORE );
-#ifdef PRAXIX
-         if (undo_valid == -1)
-         {
-            store_operand( 0 );
-            return;
-         }
-         undo_valid = -1;
-#endif
          store_operand( 2 );
       }
       else
@@ -838,6 +828,18 @@ static int save_restore( const char *file_name, int flag )
    }
 #endif
 
+   if ( flag == UNDO_SAVE && undo_valid == undo_size )
+   {
+      zbyte_t * tmp;
+      --undo_valid;
+      tmp = undo_stack[0];
+      memmove( undo_stack, undo_stack + 1, undo_valid * sizeof ( zbyte_t * ) );
+      undo_stack[undo_valid] = tmp;
+      tmp = undo_datap[0];
+      memmove( undo_datap, undo_datap + 1, undo_valid * sizeof ( zbyte_t * ) );
+      undo_datap[undo_valid] = tmp;
+   }
+
    /* Open the save file and disable scripting */
 
    if ( flag == GAME_SAVE || flag == GAME_RESTORE )
@@ -900,11 +902,12 @@ static int save_restore( const char *file_name, int flag )
       {
          if ( flag == UNDO_SAVE )
          {
-            memmove( undo_stack, stack, sizeof ( stack ) );
+            memmove( undo_stack[undo_valid], stack, sizeof ( stack ) );
          }
          else                   /* if (flag == UNDO_RESTORE) */
          {
-            memmove( stack, undo_stack, sizeof ( stack ) );
+            --undo_valid;
+            memmove( stack, undo_stack[undo_valid], sizeof ( stack ) );
          }
       }
 
@@ -939,11 +942,12 @@ static int save_restore( const char *file_name, int flag )
       {
          if ( flag == UNDO_SAVE )
          {
-            memmove( undo_datap, datap, h_restart_size );
+            memmove( undo_datap[undo_valid], datap, h_restart_size );
+            ++undo_valid;
          }
          else                   /* if (flag == UNDO_RESTORE) */
          {
-            memmove( datap, undo_datap, h_restart_size );
+            memmove( datap, undo_datap[undo_valid], h_restart_size );
          }
       }
 

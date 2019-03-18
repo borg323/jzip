@@ -99,7 +99,9 @@ int interpreter_status = 0;
 
 unsigned int data_size = 0;
 zbyte_t *datap = NULL;
-zbyte_t *undo_datap = NULL;
+zbyte_t **undo_datap = NULL;
+zbyte_t **undo_stack = NULL;
+int undo_size = 15;
 
 /* Screen size data */
 

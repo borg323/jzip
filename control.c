@@ -285,6 +285,9 @@ void restart_interp( int scripting_flag )
    if ( scripting_flag )
       set_word( H_FLAGS, ( get_word( H_FLAGS ) | SCRIPTING_FLAG ) );
 
+   if ( !undo_datap && h_type >= V5 )
+      set_word( H_FLAGS, get_word( H_FLAGS ) & ( ~UNDO_AVAILABLE_FLAG ) );
+
    set_byte( H_INTERPRETER, h_interpreter );
    set_byte( H_INTERPRETER_VERSION, h_interpreter_version );
    set_byte( H_SCREEN_ROWS, screen_rows ); /* Screen dimension in characters */

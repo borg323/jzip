@@ -170,6 +170,7 @@ extern unsigned char JTERP;
 #endif
 
 #ifdef unix
+#ifndef __STDC_VERSION__
 
 #if defined (HAVE_BCOPY)
 #define memmove(a, b, c) bcopy (b, a, c)
@@ -181,6 +182,7 @@ extern unsigned char JTERP;
 #define const
 #endif
 
+#endif
 #endif /* unix */
 
 
@@ -489,7 +491,9 @@ extern int interpreter_status;
 
 extern unsigned int data_size;
 extern zbyte_t *datap;
-extern zbyte_t *undo_datap;
+extern zbyte_t **undo_datap;
+extern zbyte_t **undo_stack;
+extern int undo_size;
 
 extern int screen_rows;
 extern int screen_cols;
