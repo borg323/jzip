@@ -465,7 +465,7 @@ int get_file_name( char *file_name, char *default_name, int flag )
          strcpy( default_name, SCRIPT_NAME );
       else if ( flag == GAME_RECORD || flag == GAME_PLAYBACK )
          strcpy( default_name, RECORD_NAME );
-      else if ( flag == GAME_SAVE_AUX || GAME_LOAD_AUX )
+      else if ( flag == GAME_SAVE_AUX || flag == GAME_LOAD_AUX )
          strcpy( default_name, AUXILARY_NAME );
       else                      /* (flag == GAME_SAVE || flag == GAME_RESTORE) */
          strcpy( default_name, SAVE_NAME );
