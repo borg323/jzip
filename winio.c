@@ -497,7 +497,7 @@ void get_prev_command( void )
          {                      /* Decrement ptr1 until a '\n' is found */
             ptr1--;
          }
-         while ( ( commands[ptr1] != '\n' ) && ( ptr1 >= 0 ) );
+         while ( ( ptr1 >= 0 ) && ( commands[ptr1] != '\n' ) );
 
          /* Then advance back to the position after the '\n' */
          ptr1++;

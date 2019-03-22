@@ -327,8 +327,8 @@ void z_sread_aread( int argc, zword_t * argv )
       out_size = strlen( buffer );
    }
 
-   if ( out_size > in_size )
-      for ( i = in_size; i < out_size; i++ )
+   if ( out_size > 0 )
+      for ( i = 0; i < out_size; i++ )
       {
          c = translate_to_zscii( toloweru( translate_from_zscii( buffer[i] ) ) );
          if ( c != '?' )
