@@ -153,6 +153,9 @@ void z_split_window( zword_t lines )
 
       /* Return cursor to text window */
 
+      screen_window = TEXT_WINDOW;
+      scripting_disable = OFF;
+      formatting = ON;
       select_text_window(  );
    }
 
