@@ -558,7 +558,11 @@ void z_set_font( zword_t new_font )
 {
    zword_t old_font = font;
 
-   if ( new_font != old_font )
+   if ( new_font != 0 && new_font != 1 && new_font != 4)
+   {
+      old_font = 0;
+   }
+   else if ( new_font != old_font && new_font != 0)
    {
       font = new_font;
       set_font( font );
