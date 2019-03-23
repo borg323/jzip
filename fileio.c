@@ -638,7 +638,7 @@ int z_restore( int argc, zword_t table, zword_t bytes, zword_t name )
    if ( argc == 3 )
    {
       get_default_name( default_name, name );
-      if ( get_file_name( new_name, default_name, GAME_LOAD_AUX ) == 0 )
+      if ( get_file_name( new_name, default_name, GAME_LOAD_AUX ) != 0 )
       {
          goto finished;
       }
@@ -659,6 +659,8 @@ int z_restore( int argc, zword_t table, zword_t bytes, zword_t name )
       if ( status != 0 )
       {
          strcpy( auxilary_name, default_name );
+         store_operand( (zword_t) bytes );
+         return ( 0 );
       }
 
       status = !status;
