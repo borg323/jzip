@@ -236,7 +236,6 @@ void initialize_screen(  )
       default_bg = 0;
    }
 
-   set_colours( default_fg, default_bg );
    set_colours( 1, 1 );
 #endif
 
@@ -509,7 +508,6 @@ void set_attribute( int attribute )
             printf( "\x1B[0m\x1B[1m" );
          }
       }
-      set_colours( 1, 1 );
    }
 
    if ( attribute & REVERSE )
@@ -535,6 +533,8 @@ void set_attribute( int attribute )
    {
    }
 
+   printf( "\x1B[%dm", current_bg );
+   printf( "\x1B[%dm", current_fg );
 
 #else
 
