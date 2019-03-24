@@ -45,6 +45,8 @@ static int saved_row = 0;
 static int saved_col = 0;
 static ZINT16 current_fg;
 static ZINT16 current_bg;
+extern ZINT16 default_fg;
+extern ZINT16 default_bg;
 
 int timed_read_key( int );
 int read_key( void );
