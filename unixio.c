@@ -87,13 +87,15 @@ static int saved_col;
 
 static int cursor_saved = OFF;
 
+static int disable_wrap;
+
 static char tcbuf[1024];
 static char cmbuf[1024];
 static char *cmbufp;
 
 static char *CE, *CL, *CM, *CS, *DL, *MD, *ME, *MR, *SE, *SO, *TE, *TI, *UE, *US, *KD, *KL, *KR,
 
-      *KU;
+      *KU, *RA, *SA;
 
 #define GET_TC_STR(p1, p2) if ((p1 = tgetstr (p2, &cmbufp)) == NULL) p1 = ""
 
@@ -129,8 +131,8 @@ extern int tgetent(  );
 extern int tgetnum(  );
 extern char *tgetstr(  );
 extern char *tgoto(  );
-extern void tputs(  );
-extern char *tgetflag(  );
+extern int tputs(  );
+extern int tgetflag(  );
 
 /* print unicode char <= 0xffff in utf-8 */
 
@@ -192,7 +194,16 @@ void initialize_screen(  )
    GET_TC_STR( KL, "kl" );      /* sent by keypad left arrow                */
    GET_TC_STR( KR, "kr" );      /* sent by keypad right arrow               */
 
-   if ( right_margin == 0 && tgetflag( "am" ) && !tgetflag( "xn" ) ) /* *JWK* */
+   GET_TC_STR( RA, "RA" );      /* disable wrap                             */
+   GET_TC_STR( SA, "SA" );      /* enable wrap                              */
+
+   disable_wrap = tgetflag( "am" );
+   if ( *RA == '\0' || *SA == '\0' )
+   {
+      disable_wrap = 0;
+   }
+
+   if ( !disable_wrap && right_margin == 0 && tgetflag( "am" ) && !tgetflag( "xn" ) ) /* *JWK* */
       right_margin = 1;         /* *JWK* */
 
    if ( screen_cols == 0 && ( screen_cols = tgetnum( "co" ) ) == -1 )
@@ -219,6 +230,9 @@ void initialize_screen(  )
       US = SO;
    }
    tputs( TI, 1, outc );
+
+   if ( disable_wrap )
+      tputs( RA, 1, outc );
 
    set_attribute( NORMAL );
 
@@ -315,6 +329,9 @@ void reset_screen(  )
 #endif
 
       set_cbreak_mode( 0 );
+
+      if ( disable_wrap )
+         tputs( SA, 1, outc );
 
       tputs( TE, 1, outc );
    }
@@ -535,7 +552,6 @@ void set_attribute( int attribute )
 
    printf( "\x1B[%dm", current_bg );
    printf( "\x1B[%dm", current_fg );
-
 #else
 
    if ( attribute == NORMAL )
