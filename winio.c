@@ -45,8 +45,6 @@ static int saved_row = 0;
 static int saved_col = 0;
 static ZINT16 current_fg;
 static ZINT16 current_bg;
-static ZINT16 default_fg = WHITE;
-static ZINT16 default_bg = BLUE;
 
 int timed_read_key( int );
 int read_key( void );
@@ -1079,11 +1077,11 @@ void set_colours( zword_t foreground, zword_t background )
    /* Translate from Z-code colour values to natural colour values */
    if ( ( ZINT16 ) foreground >= 1 && ( ZINT16 ) foreground <= 9 )
    {
-      fg = ( foreground == 1 ) ? default_fg : colour_map[( ZINT16 ) foreground - 2];
+      fg = ( foreground == 1 ) ? colour_map[default_fg] : colour_map[( ZINT16 ) foreground - 2];
    }
    if ( ( ZINT16 ) background >= 1 && ( ZINT16 ) background <= 9 )
    {
-      bg = ( background == 1 ) ? default_bg : colour_map[( ZINT16 ) background - 2];
+      bg = ( background == 1 ) ? colour_map[default_bg] : colour_map[( ZINT16 ) background - 2];
    }
 
    /* Set foreground and background colour */

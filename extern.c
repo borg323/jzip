@@ -135,7 +135,7 @@ int recording = OFF;
 int replaying = OFF;
 int font = 1;
 int use_bg_color = 1;
-ZINT16 default_fg = 9, default_bg = 6;
+ZINT16 default_fg = 7, default_bg = 0;
 
 /* Status region data */
 

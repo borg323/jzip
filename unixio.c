@@ -237,8 +237,6 @@ void initialize_screen(  )
    set_attribute( NORMAL );
 
 #if defined HARD_COLORS
-   default_fg = 7;              /* white */
-   default_bg = 4;              /* blue */
    if ( monochrome )
    {
       default_bg = 0;           /* black */
