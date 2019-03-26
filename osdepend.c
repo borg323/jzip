@@ -144,21 +144,21 @@ void process_arguments( int argc, char *argv[] )
 #if defined OS2 || defined __MSDOS__ 
 #define GETOPT_SET "gbomvzhy?l:c:k:r:t:s:u:d:"
 #elif defined TURBOC            
-#define GETOPT_SET   "bmvzhy?l:c:k:r:t:s:u:d:"
+#define GETOPT_SET   "gbmvzhy?l:c:k:r:t:s:u:d:"
 #elif defined HARD_COLORS       
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:s:f:b:u:d:"
+#define GETOPT_SET    "gmvzhy?l:c:k:r:t:s:f:b:u:d:"
 #else 
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:s:u:d:"
+#define GETOPT_SET    "gmvzhy?l:c:k:r:t:s:u:d:"
 #endif 
 #else 
 #if defined OS2 || defined __MSDOS__ 
 #define GETOPT_SET "gbomvzhy?l:c:k:r:t:u:d:"
 #elif defined TURBOC            
-#define GETOPT_SET   "bmvzhy?l:c:k:r:t:u:d:"
+#define GETOPT_SET   "gbmvzhy?l:c:k:r:t:u:d:"
 #elif defined HARD_COLORS       
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:f:b:u:d:"
+#define GETOPT_SET    "gmvzhy?l:c:k:r:t:f:b:u:d:"
 #else 
-#define GETOPT_SET    "mvzhy?l:c:k:r:t:u:d:"
+#define GETOPT_SET    "gmvzhy?l:c:k:r:t:u:d:"
 #endif 
 #endif 
    while ( ( c = getopt( argc, argv, GETOPT_SET ) ) != EOF )
@@ -186,11 +186,9 @@ void process_arguments( int argc, char *argv[] )
          case 'y':             /* Tandy */
             fTandy = 1;         
             break;              
-#if defined OS2 || defined __MSDOS__ 
          case 'g':             /* Beyond Zork or other games using IBM graphics */
             fIBMGraphics = 1;   
             break;              
-#endif 
          case 'v':             /* version information */
 
             fprintf( stdout, "\nJZIP - An Infocom Z-code Interpreter Program \n" );
@@ -316,10 +314,10 @@ void process_arguments( int argc, char *argv[] )
 #if defined __MSDOS__ || defined OS2 
       fprintf( stdout, "\t-b   force black-and-white mode\n" ); 
       fprintf( stdout, "\t-o   force color mode\n" ); 
-      fprintf( stdout, "\t-g   use \"Beyond Zork\" graphics, rather than standard international\n" ); 
 #elif defined TURBOC            
       fprintf( stdout, "\t-b   run in 43/50 line EGA/VGA mode\n" ); 
 #endif 
+      fprintf( stdout, "\t-g   use \"Beyond Zork\" graphics, rather than standard international\n" );
       fprintf( stdout, "\t-d n size of undo buffer (default = %d)\n", undo_size );
 
 #ifdef STRICTZ

@@ -154,6 +154,9 @@ void initialize_screen( void )
 void restart_screen( void )
 {
    zbyte_t high = 1, low = 0;
+   /* changing the character set is not standard compiant */
+   if ( fIBMGraphics )
+      high = low = 0;
 
    cursor_saved = OFF;
 

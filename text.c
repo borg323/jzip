@@ -451,7 +451,7 @@ int translate_from_zscii(int c)
    {
       unsigned short s = '?';
       if ( c < 224 )
-         s = zscii2latin1[c - 155];
+         s = zscii2unicode[(int)fIBMGraphics][c - 155];
       if ( h_unicode_table )
       {
          int len = get_byte( h_unicode_table );
@@ -499,10 +499,22 @@ void write_zchar( int c )
       {
          char *s = "?";
          if ( !h_unicode_table && c < 224 )
-            s = zscii2txt[c - 155];
+            s = zscii2txt[(int)fIBMGraphics][c - 155];
          while ( *s )
             write_char( *s++ );
       }
+   }
+   else if ( c > 23 && c < 28 && !unicode )
+   {
+      /* Arrow keys approximation */
+      static char xlat[4] = { '^', 'v', '>', '<' } ;
+      write_char( xlat[c - 24] );
+   }
+   else if ( c > 23 && c < 28 )
+   {
+      /* Arrow keys in unicode */
+      static unsigned short xlat[4] = { 0x2191, 0x2193, 0x2192, 0x2190 } ;
+      write_char( xlat[c - 24] );
    }
    else
    {
@@ -510,15 +522,7 @@ void write_zchar( int c )
       /* Put default character in translation buffer */
       xlat_buffer[0] = '?';
       xlat_buffer[1] = '\0';
-      if ( c > 23 && c < 28 )
-      {
-         /* Arrow keys - these must the keyboard keys used for input */
-         static char xlat[4] = { '\\', '/', '+', '-' };
-
-         xlat_buffer[0] = xlat[c - 24];
-         xlat_buffer[1] = '\0';
-      }
-      else if ( c == 0 )
+      if ( c == 0 )
       {
          /* Null - print nothing */
          xlat_buffer[0] = '\0';
@@ -567,7 +571,7 @@ int translate_to_zscii(int c)
       }
       for (i = 0x9b + len; i <= 0xdf; i++)
       {
-         if (c == zscii2latin1[i - 0x9b])
+         if (c == zscii2unicode[(int)fIBMGraphics][i - 0x9b])
          {
             return i;
          }

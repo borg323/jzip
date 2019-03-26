@@ -532,8 +532,8 @@ extern char unicode;
 extern int hist_buf_size;
 extern char bigscreen;
 
-extern unsigned short zscii2latin1[69];
-extern char *zscii2txt[69];
+extern unsigned short zscii2unicode[2][69];
+extern char *zscii2txt[2][69];
 
 #ifdef STRICTZ
 
