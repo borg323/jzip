@@ -756,14 +756,14 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                }
 
                tail_col--;
-               (  *read_size  )--;
+               ( *read_size )--;
 
                for ( loop = curr_char_pos; loop < *read_size; loop++ )
                {
-                  display_char( buffer[loop] );
+                  display_char( translate_from_zscii ( buffer[loop] ) );
                }
 
-               display_char (' ');
+               display_char( ' ' );
 
                move_cursor( row, col );
             }

@@ -75,7 +75,6 @@ int space_avail;
 static int ptr1, ptr2 = 0;
 static int end_ptr = 0;
 static int row, head_col;
-static int keypad_avail = 1;
 
 /* done with editing global info */
 
@@ -212,11 +211,6 @@ void initialize_screen(  )
    if ( screen_rows == 0 && ( screen_rows = tgetnum( "li" ) ) == -1 )
       screen_rows = DEFAULT_ROWS;
 
-   if ( *KU == '\0' || *KD == '\0' || *KL == '\0' || *KR == '\0' )
-   {
-      keypad_avail = 0;
-   }
-
    if ( *MD == '\0' || *ME == '\0' || *MR == '\0' )
    {
       MD = SO;
@@ -316,8 +310,7 @@ void reset_screen(  )
    /* only do this stuff on exit when called AFTER initialize_screen */
    if ( interp_initialized )
    {
-      display_string( "\n" );
-      clear_line(  );
+      scroll_line();
       display_string( "[Hit any key to exit.]" );
       getchar(  );
       move_cursor( screen_rows, 1 );
@@ -841,21 +834,20 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 
       /****** Previous Command Selection Keys ******/
 
-      if ( keypad_avail )
+      if ( ( c >= 0x81 && c <= 0x9a ) || c == 27 )
       {
+         keyfunc = 1;
          if ( c == 0x81 )
          {                   /* Up arrow */
             get_prev_command(  );
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
-            keyfunc = 1;
          }
          else if ( c == 0x82 )
          {                   /* Down arrow */
             get_next_command(  );
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
-            keyfunc = 1;
          }
 
 /* PgUp
@@ -880,7 +872,6 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
              ptr1 = ptr2 = end_ptr;
              curr_char_pos = *read_size = display_command(buffer);
              tail_col = head_col + *read_size;
-             keyfunc=1;
          }
 
          /****** Cursor Editing Keys ******/
@@ -896,7 +887,6 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                move_cursor( row, --col );
                curr_char_pos--;
             }
-            keyfunc = 1;
          }
          else if ( c == 0x84 )
          {                   /* Right arrow */
@@ -909,7 +899,6 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                move_cursor( row, ++col );
                curr_char_pos++;
             }
-            keyfunc = 1;
          }
 
 /* End
