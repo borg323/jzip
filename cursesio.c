@@ -241,6 +241,8 @@ void restart_screen(  )
                   CONFIG_TIMEDINPUT ) );
 #if defined HARD_COLORS
       set_byte( H_CONFIG, ( get_byte( H_CONFIG ) | CONFIG_COLOUR ) );
+      set_byte( H_BG_DEFAULT_COLOR, default_bg + 2 );
+      set_byte( H_FG_DEFAULT_COLOR, default_fg + 2 );
 #endif
       /* turn stuff off */
       set_byte( H_CONFIG, ( get_byte( H_CONFIG ) & ~CONFIG_PICTURES & ~CONFIG_SFX ) );

@@ -174,6 +174,9 @@ void restart_screen( void )
                   CONFIG_TIMEDINPUT | CONFIG_COLOUR ) );
       /* turn stuff off */
       set_byte( H_CONFIG, ( get_byte( H_CONFIG ) & ~CONFIG_PICTURES & ~CONFIG_SFX ) );
+      /* default colors */
+      set_byte( H_BG_DEFAULT_COLOR, default_bg + 2 );
+      set_byte( H_FG_DEFAULT_COLOR, default_fg + 2 );
    }
 
    /* Force graphics off as we can't do them */

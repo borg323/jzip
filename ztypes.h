@@ -302,6 +302,8 @@ zheader_t;
 #define H_MAX_CHAR_HEIGHT 39
 #define H_FILLER1 40
 
+#define H_BG_DEFAULT_COLOR 44
+#define H_FG_DEFAULT_COLOR 45
 #define H_FUNCTION_KEYS_OFFSET 46
 #define H_FILLER2 48
 
