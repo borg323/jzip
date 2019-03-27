@@ -26,7 +26,8 @@ else
       deps += curses
       lib_src += 'cursesio.c'
     else
-      error('no suitable backend')
+      warning('using the fallback (not fully functional) "dumbio" module')
+      lib_src += 'dumbio.c'
     endif
   endif
 endif
