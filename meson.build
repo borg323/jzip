@@ -16,8 +16,19 @@ if host_machine.system() == 'windows'
   lib_src += 'winio.c'
   compile_args += '-DLOUSY_RANDOM'
 else
-  deps += cc.find_library('termcap', required : true)
-  lib_src += 'unixio.c'
+  termcap = cc.find_library('termcap', required : false)
+  if termcap.found()
+    deps += termcap
+    lib_src += 'unixio.c'
+  else
+    curses = dependency('ncursesw', required : false)
+    if curses.found() and cc.has_header('ncursesw/curses.h')
+      deps += curses
+      lib_src += 'cursesio.c'
+    else
+      error('no suitable backend')
+    endif
+  endif
 endif
 
 if cc.get_id() != 'msvc'
