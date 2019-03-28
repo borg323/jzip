@@ -119,12 +119,16 @@ static int colour_map[] = { COLOR_BLACK, COLOR_RED, COLOR_GREEN, COLOR_YELLOW,
 
 void outc( int c )
 {
+   int x, y;
+
+   getyx( stdscr, y, x );
    if ( c == '\n' )
-      addch( c );
+   {
+      if ( ++y < LINES )
+         move(y, 0);
+   }
    else
    {
-      int x, y;
-      getyx( stdscr, y, x );
       if ( x >= COLS - 1 )
       {
          /* Close to the edge so no wrapping */
@@ -258,7 +262,8 @@ void reset_screen(  )
    /* only do this stuff on exit when called AFTER initialize_screen */
    if ( interp_initialized )
    {
-      display_string( "\n[Hit any key to exit.]" );
+      scroll_line();
+      display_string( "[Hit any key to exit.]" );
       getch(  );
 
       delete_status_window(  );
@@ -278,7 +283,14 @@ void reset_screen(  )
 
 void clear_screen(  )
 {
-   erase(  );                   /* clear screen */
+//   erase(  );                   /* clear screen */
+   int row;
+
+   for ( row = 1; row <= screen_rows; row++ )
+   {
+      move_cursor( row, 1 );
+      clear_line(  );
+   }
    current_row = 1;
    current_col = 1;
 }                               /* clear_screen */
@@ -328,7 +340,11 @@ void delete_status_window(  )
 
 void clear_line(  )
 {
-   clrtoeol(  );
+//   clrtoeol(  );
+   int i;
+
+   for ( i = 1; i <= screen_cols; i++ )
+      outc( ' ' );
 }                               /* clear_line */
 
 void clear_text_window(  )
@@ -465,6 +481,8 @@ void scroll_line(  )
    {
       current_row = screen_rows;
       move_cursor( current_row, 1 );
+      clear_line();
+      move_cursor( current_row, 1 );
    }
 }                               /* scroll_line */
 
@@ -491,6 +509,7 @@ int display_command( char *buffer )
 
    move_cursor( row, head_col );
    clear_line(  );
+   move_cursor( row, head_col );
 
    /* ptr1 = end_ptr when the player has selected beyond any previously
     * saved command.
@@ -1072,6 +1091,6 @@ void set_colours( zword_t foreground, zword_t background )
 int check_font_char( int c )
 {
    /* A first approximation */
-   return !iswcntrl( c );
+   return iswprint( c );
 }
 
