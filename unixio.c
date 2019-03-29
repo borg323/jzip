@@ -94,7 +94,7 @@ static char *cmbufp;
 
 static char *CE, *CL, *CM, *CS, *DL, *MD, *ME, *MR, *SE, *SO, *TE, *TI, *UE, *US, *KD, *KL, *KR,
 
-      *KU, *RA, *SA;
+      *KU, *RA, *SA, *KP, *KN, *KI, *KH, *Kd;
 
 #define GET_TC_STR(p1, p2) if ((p1 = tgetstr (p2, &cmbufp)) == NULL) p1 = ""
 
@@ -195,6 +195,12 @@ void initialize_screen(  )
 
    GET_TC_STR( RA, "RA" );      /* disable wrap                             */
    GET_TC_STR( SA, "SA" );      /* enable wrap                              */
+
+   GET_TC_STR( KP, "kP" );      /* sent by PgUp key                         */
+   GET_TC_STR( KN, "kN" );      /* sent by PgDn key                         */
+   GET_TC_STR( KI, "kI" );      /* sent by Insert key                       */
+   GET_TC_STR( KH, "kh" );      /* sent by Home key                         */
+   GET_TC_STR( Kd, "kD" );      /* sent by Delete key                       */
 
    disable_wrap = tgetflag( "am" );
    if ( *RA == '\0' || *SA == '\0' )
@@ -796,7 +802,7 @@ void add_command( char *buffer, int size )
 int input_line( int buflen, char *buffer, int timeout, int *read_size, int start_col )
 {
    int c, col;
-   int /*init_char_pos,*/ curr_char_pos;
+   int init_char_pos, curr_char_pos;
    int loop, tail_col;
    int keyfunc = 0;
 
@@ -812,7 +818,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
    head_col = start_col;
    tail_col = start_col + *read_size;
 
-   /*init_char_pos =*/ curr_char_pos = col - start_col;
+   init_char_pos = curr_char_pos = col - start_col;
 
    ptr1 = ptr2 = end_ptr;
 
@@ -834,7 +840,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 
       /****** Previous Command Selection Keys ******/
 
-      if ( ( c >= 0x81 && c <= 0x9a ) || c == 27 )
+      if ( ( c >= 0x81 && c <= 0x9a ) || c == 27 || c == 0xff )
       {
          keyfunc = 1;
          if ( c == 0x81 )
@@ -849,28 +855,16 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
          }
-
-/* PgUp
-          else if (c == (unsigned char) '\x09a') { 
-             get_first_command();
-             curr_char_pos = *read_size = display_command(buffer);
-             tail_col = head_col + *read_size;
-             keyfunc=1;
-          }
-*/
-
-/* PgDn
-          else if (c == (unsigned char) '\x094') { 
-             ptr1 = ptr2 = end_ptr;
-             curr_char_pos = *read_size = display_command(buffer);
-             tail_col = head_col + *read_size;
-             keyfunc=1;
+         else if ( c == 0x9a )
+         {                   /* PgUp */
+            get_first_command( );
+            curr_char_pos = *read_size = display_command( buffer );
+            tail_col = head_col + *read_size;
          }
-*/
-
-          else if (c == 27) {
+         else if (c == 0x94 || c == 27)
+         {                   /* PgDn or Esc */
              ptr1 = ptr2 = end_ptr;
-             curr_char_pos = *read_size = display_command(buffer);
+             curr_char_pos = *read_size = display_command( buffer );
              tail_col = head_col + *read_size;
          }
 
@@ -900,48 +894,40 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                curr_char_pos++;
             }
          }
-
-/* End
-         else if (c == (unsigned char) '\x092') {  
-            move_cursor(row, tail_col);
+         else if ( c == 0x92 )
+         {                   /* End */
+            move_cursor( row, tail_col );
             curr_char_pos = init_char_pos + *read_size;
-            keyfunc=1;
          }
-*/
-
-/* Home
-         else if (c == (unsigned char) '\x098') { 
-            move_cursor(row, head_col);
+         else if ( c == 0x98 )
+         {                   /* Home */
+            move_cursor( row, head_col );
             curr_char_pos = init_char_pos;
-            keyfunc=1;
          }
-*/
-
-/* Delete */
-
-/*
-         else if (c == (unsigned char) '\x096') { 
-            if (curr_char_pos < *read_size) {
-               get_cursor_position (&row, &col);
+         else if ( c == 0xff )
+         {                   /* Delete */
+            if ( curr_char_pos < *read_size )
+            {
+               get_cursor_position ( &row, &col );
  
-               for (loop = curr_char_pos; loop < *read_size; loop++) {
+               for ( loop = curr_char_pos; loop < *read_size; loop++ )
+               {
                   buffer[loop] = buffer[loop + 1];
                }
  
                tail_col--;
-               (*read_size)--;
+               ( *read_size )--;
  
-               for (loop = curr_char_pos; loop < *read_size; loop++) {
-                  display_char (buffer[loop]);
-                }
+               for ( loop = curr_char_pos; loop < *read_size; loop++ )
+               {
+                  display_char( buffer[loop] );
+               }
  
-                display_char (' ');
- 
-                move_cursor(row, col);
-                keyfunc=1;
+               display_char( ' ' );
+
+               move_cursor( row, col );
             }
          }
- */
       }
       if ( !keyfunc )
       {
@@ -1108,7 +1094,7 @@ static int wait_for_char( int timeout )
 
 }                               /* wait_for_char */
 
-/* mode == EXTENDED may be used for home/end etc */
+/* mode == EXTENDED to return 0xff for DEL instread of 8 (BACKSPACE) */
 static int read_key( int mode )
 {
    char in[80];
@@ -1141,14 +1127,28 @@ static int read_key( int mode )
       }
       else if ( ct == 4 && ( in[0] & 0xf8 ) == 0xf0 )
           return '?';
-      else if ( in[0] == KU[0] && in[ct-1] == KU[strlen(KU)-1] )
+      else if ( KU && in[0] == KU[0] && in[ct-1] == KU[strlen(KU)-1] )
           return 0x81;
-      else if ( in[0] == KD[0] && in[ct-1] == KD[strlen(KD)-1] )
+      else if ( KD && in[0] == KD[0] && in[ct-1] == KD[strlen(KD)-1] )
           return 0x82;
-      else if ( in[0] == KL[0] && in[ct-1] == KL[strlen(KL)-1] )
+      else if ( KL && in[0] == KL[0] && in[ct-1] == KL[strlen(KL)-1] )
           return 0x83;
-      else if ( in[0] == KR[0] && in[ct-1] == KR[strlen(KR)-1] )
+      else if ( KR && in[0] == KR[0] && in[ct-1] == KR[strlen(KR)-1] )
           return 0x84;       /* Cursor keys */
+      else if ( KP && in[0] == KP[0] && ct == strlen(KP) && ct > 2 && !strcmp( in+2, KP+2 ) )
+          return 0x9a;       /* PgUp */
+      else if ( KN && in[0] == KN[0] && ct == strlen(KN) && ct > 2 && !strcmp( in+2, KN+2 ) )
+          return 0x94;       /* PgDn */
+      else if ( KH && in[0] == KH[0] && ct == strlen(KH) && ct > 2 && !strcmp( in+2, KH+2 ) )
+          return 0x98;       /* Home */
+      else if ( KI && in[0] == KI[0] && ct == strlen(KI) && ct > 2 && !strcmp( in+2, KI+2 ) )
+          return 0x91;       /* Insert */
+      else if ( Kd && in[0] == Kd[0] && ct == strlen(Kd) && ct > 2 && !strcmp( in+2, Kd+2 ) )
+      {                      /* Delete */
+         if ( mode == EXTENDED )
+            return 0xff;
+         return '\b';
+      }
       else if ( ct == 1 && in[0] == 127 )
           return '\b';
       else if ( ct == 1 && in[0] == 10 )
