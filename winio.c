@@ -179,8 +179,8 @@ void restart_screen( void )
       set_byte( H_FG_DEFAULT_COLOR, default_fg + 2 );
    }
 
-   /* Force graphics off as we can't do them */
-   set_word( H_FLAGS, ( get_word( H_FLAGS ) & ( ~GRAPHICS_FLAG ) ) );
+   /* Force graphics and sound off as we can't do them */
+   set_word( H_FLAGS, ( get_word( H_FLAGS ) & ~GRAPHICS_FLAG & ~NEW_SOUND_FLAG ) );
 
 }                               /* restart_screen */
 

@@ -308,8 +308,8 @@ void restart_screen(  )
       set_byte( H_CONFIG, ( get_byte( H_CONFIG ) & ~CONFIG_PICTURES & ~CONFIG_SFX ) );
    }
 
-   /* Force graphics off as we can't do them */
-   set_word( H_FLAGS, ( get_word( H_FLAGS ) & ( ~GRAPHICS_FLAG ) ) );
+   /* Force graphics and sound off as we can't do them */
+   set_word( H_FLAGS, ( get_word( H_FLAGS ) & ~GRAPHICS_FLAG & ~NEW_SOUND_FLAG ) );
 
 }                               /* restart_screen */
 
