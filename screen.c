@@ -440,7 +440,7 @@ void output_new_line( void )
    if ( outputting == ON )
    {
 
-      if ( formatting == ON && screen_window == TEXT_WINDOW )
+      if ( screen_window == TEXT_WINDOW )
       {
 
          /* If this is the text window then scroll it up one line */

@@ -376,8 +376,7 @@ void clear_screen(  )
       move_cursor( row, 1 );
       clear_line(  );
    }
-   current_row = 1;
-   current_col = 1;
+   move_cursor( 1, 1 );
 
 }                               /* clear_screen */
 

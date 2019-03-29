@@ -291,8 +291,7 @@ void clear_screen(  )
       move_cursor( row, 1 );
       clear_line(  );
    }
-   current_row = 1;
-   current_col = 1;
+   move_cursor( 1, 1 );
 }                               /* clear_screen */
 
 
@@ -389,8 +388,11 @@ void move_cursor( int row, int col )
 
 void get_cursor_position( int *row, int *col )
 {
-   *row = current_row;
-   *col = current_col;
+   int x, y;
+
+   getyx( stdscr, y, x );
+   *row = y + 1;
+   *col = x + 1;
 }                               /* get_cursor_position */
 
 void save_cursor_position(  )
@@ -450,6 +452,11 @@ static void display_string( char *s )
 
 void display_char( int c )
 {
+   if ( c == 7 )
+   {
+      beep();
+      return;
+   }
    outc( c );
 
    if ( ++current_col > screen_cols )
@@ -480,10 +487,11 @@ void scroll_line(  )
    if ( ++current_row > screen_rows )
    {
       current_row = screen_rows;
-      move_cursor( current_row, 1 );
-      clear_line();
-      move_cursor( current_row, 1 );
    }
+   move_cursor( current_row, 1 );
+   clear_line();
+   move_cursor( current_row, 1 );
+
 }                               /* scroll_line */
 
 /*
