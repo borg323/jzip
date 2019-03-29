@@ -105,9 +105,6 @@ void initialize_screen( void )
    if ( screen_cols == 0 )
       screen_cols = screenwidth;
 
-   if ( monochrome )
-      default_bg = 0;           /* black */
-
    set_colours( 1, 1 );         /* set default colours */
    set_attribute( NORMAL );
    clear_screen(  );
@@ -171,7 +168,9 @@ void restart_screen( void )
       /* turn stuff on */
       set_byte( H_CONFIG,
                 ( get_byte( H_CONFIG ) | CONFIG_BOLDFACE | CONFIG_EMPHASIS | CONFIG_FIXED |
-                  CONFIG_TIMEDINPUT | CONFIG_COLOUR ) );
+                  CONFIG_TIMEDINPUT ) );
+      if ( !monochrome )
+         set_byte( H_CONFIG, ( get_byte( H_CONFIG ) | CONFIG_COLOUR ) );
       /* turn stuff off */
       set_byte( H_CONFIG, ( get_byte( H_CONFIG ) & ~CONFIG_PICTURES & ~CONFIG_SFX ) );
       /* default colors */

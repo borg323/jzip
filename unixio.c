@@ -239,17 +239,14 @@ void initialize_screen(  )
    set_attribute( NORMAL );
 
 #if defined HARD_COLORS
-   if ( monochrome )
-   {
-      default_bg = 0;           /* black */
-   }
+#if 0
    if ( default_bg < 0 )
    {
       use_bg_color = 0;
       printf( "\x1B[1m" );
       default_bg = 0;
    }
-
+#endif
    set_colours( 1, 1 );
 #endif
 
@@ -300,7 +297,8 @@ void restart_screen(  )
                 ( get_byte( H_CONFIG ) | CONFIG_BOLDFACE | CONFIG_EMPHASIS | CONFIG_FIXED |
                   CONFIG_TIMEDINPUT ) );
 #if defined HARD_COLORS
-      set_byte( H_CONFIG, ( get_byte( H_CONFIG ) | CONFIG_COLOUR ) );
+      if ( !monochrome )
+         set_byte( H_CONFIG, ( get_byte( H_CONFIG ) | CONFIG_COLOUR ) );
       set_byte( H_BG_DEFAULT_COLOR, default_bg + 2 );
       set_byte( H_FG_DEFAULT_COLOR, default_fg + 2 );
 #endif

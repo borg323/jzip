@@ -534,6 +534,8 @@ extern char monochrome;
 extern char unicode;
 extern int hist_buf_size;
 extern char bigscreen;
+extern ZINT16 default_fg;
+extern ZINT16 default_bg;
 
 extern unsigned short zscii2unicode[2][69];
 extern char *zscii2txt[2][69];

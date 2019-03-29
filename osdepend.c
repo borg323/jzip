@@ -309,7 +309,8 @@ void process_arguments( int argc, char *argv[] )
 
 #if defined (HARD_COLORS)
       fprintf( stdout, "\t-f n foreground color\n" );
-      fprintf( stdout, "\t-b n background color (-1 to ignore bg color (try it on an Eterm))\n" );
+//      fprintf( stdout, "\t-b n background color (-1 to ignore bg color (try it on an Eterm))\n" );
+      fprintf( stdout, "\t-b n background color\n" );
       fprintf( stdout, "\t     Black=0 Red=1 Green=2 Yellow=3 Blue=4 Magenta=5 Cyan=6 White=7\n" );
 #endif
       fprintf( stdout, "\t-m   force monochrome mode\n" );
