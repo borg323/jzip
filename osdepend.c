@@ -322,6 +322,7 @@ void process_arguments( int argc, char *argv[] )
 #endif 
       fprintf( stdout, "\t-e   disable line editting (to pass all keys to game)\n" );
       fprintf( stdout, "\t-g   use \"Beyond Zork\" graphics, rather than standard international\n" );
+      fprintf( stdout, "\t     (also use PgUp/PgDn to scroll BZ status window without using -e)\n" );
       fprintf( stdout, "\t-d n size of undo buffer (default = %d)\n", undo_size );
 
 #ifdef STRICTZ

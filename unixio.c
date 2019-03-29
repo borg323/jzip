@@ -863,12 +863,20 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
             tail_col = head_col + *read_size;
             keyfunc = 1;
          }
+         else if ( fIBMGraphics && c == 0x09a )
+         {                   /* PgUp passed as up arrow */
+            c = 0x81;
+         }
          else if ( c == 0x9a )
          {                   /* PgUp */
             get_first_command( );
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
             keyfunc = 1;
+         }
+         else if ( fIBMGraphics && c == 0x094 )
+         {                   /* PgDn passed as down arrow */
+            c = 0x82;
          }
          else if (c == 0x94 || c == 27)
          {                   /* PgDn or Esc */
