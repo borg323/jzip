@@ -16,15 +16,15 @@ if host_machine.system() == 'windows'
   lib_src += 'winio.c'
   compile_args += '-DLOUSY_RANDOM'
 else
-  termcap = cc.find_library('termcap', required : false)
-  if termcap.found()
-    deps += termcap
-    lib_src += 'unixio.c'
+  curses = dependency('ncursesw', required : false)
+  if curses.found() and cc.has_header('ncursesw/curses.h')
+    deps += curses
+    lib_src += 'cursesio.c'
   else
-    curses = dependency('ncursesw', required : false)
-    if curses.found() and cc.has_header('ncursesw/curses.h')
-      deps += curses
-      lib_src += 'cursesio.c'
+    termcap = cc.find_library('termcap', required : false)
+    if termcap.found()
+      deps += termcap
+      lib_src += 'unixio.c'
     else
       warning('using the fallback (not fully functional) "dumbio" module')
       lib_src += 'dumbio.c'
