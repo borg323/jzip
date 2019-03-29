@@ -707,32 +707,35 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
       }
       c = read_key( EXTENDED );
 
-      if ( ( c >= 0x81 && c <= 0x9a ) || c == 27 || c == 0xff )
+      if ( line_editing )
       {
-         keyfunc = 1;
          if ( c == 0x81 )
          {                   /* Up arrow */
             get_prev_command(  );
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
+            keyfunc = 1;
          }
          else if ( c == 0x82 )
          {                   /* Down arrow */
             get_next_command(  );
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
+            keyfunc = 1;
          }
          else if ( c == 0x09a )
          {                   /* PgUp */
             get_first_command();
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
+            keyfunc = 1;
          }
          else if ( c == 0x094 || c == 27 )
-         {                   /* Esc */
+         {                   /* PgDn or Esc */
             ptr1 = ptr2 = end_ptr;
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
+            keyfunc = 1;
          }
 
          /****** Cursor Editing Keys ******/
@@ -748,6 +751,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                move_cursor( row, --col );
                curr_char_pos--;
             }
+            keyfunc = 1;
          }
          else if ( c == 0x84 )
          {                   /* Right arrow */
@@ -760,16 +764,19 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                move_cursor( row, ++col );
                curr_char_pos++;
             }
+            keyfunc = 1;
          }
          else if ( c == 0x092 )
          {                  /* End */
             move_cursor( row, tail_col );
             curr_char_pos = init_char_pos + *read_size;
+            keyfunc = 1;
          }
          else if ( c == 0x098 )
          {                  /* Home */
             move_cursor( row, head_col );
             curr_char_pos = init_char_pos;
+            keyfunc = 1;
          }
          else if ( c == 0xff )
          {                  /* Delete */
@@ -794,12 +801,30 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 
                move_cursor( row, col );
             }
+            keyfunc = 1;
          }
       }
 
       if ( !keyfunc )
       {
-         if ( c == '\b' )       /* Backspace */
+         if ( c >= 0x81 && c <= 0x9a )
+         {
+            int addr = get_word( H_FUNCTION_KEYS_OFFSET );
+            if ( h_type >= V5 && addr > 0 )
+            {
+               int t;
+               /* Check for game specifiec terminating character */
+               while ( ( t = get_byte( addr++ ) ) != 0 )
+               {
+                  if ( t == c || t == 255 )
+                  {
+                     move_cursor( row, tail_col );
+                     return c;
+                  }
+               }
+            }
+         }
+         else if ( c == '\b' || c == 0xff )       /* Backspace or Delete */
          {
             get_cursor_position( &row, &col );
             if ( col > head_col )
@@ -817,7 +842,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                move_cursor( row, col );
             }
          }
-         else
+         else if ( c != 27 )
          {
             /* Normal key action */
             if ( *read_size == ( buflen - 1 ) )

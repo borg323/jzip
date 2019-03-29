@@ -172,6 +172,10 @@ int status_size = 0;
 
 char fTandy = 0;                
 
+/* Line editting enabled (intercepts some keys) */
+
+char line_editing = 1;
+
 /* IBM (not international) glyphs requested */
 
 char fIBMGraphics = 0;          

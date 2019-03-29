@@ -611,6 +611,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
    int c, col;
    int init_char_pos, curr_char_pos;
    int loop, tail_col;
+   int keyfunc = 0;
 
    /*
     * init_char_pos : the initial cursor location
@@ -646,6 +647,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 
    for ( ;; )
    {
+      keyfunc = 0;
       /* Read a single keystroke */
       do
       {
@@ -664,248 +666,276 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 
       /****** Previous Command Selection Keys ******/
 
-      if ( c == ( unsigned char ) '\x081' )
-      {                         /* Up arrow */
-         get_prev_command(  );
-         curr_char_pos = *read_size = display_command( buffer );
-         tail_col = head_col + *read_size;
-      }
-      else if ( c == ( unsigned char ) '\x082' )
-      {                         /* Down arrow */
-         get_next_command(  );
-         curr_char_pos = *read_size = display_command( buffer );
-         tail_col = head_col + *read_size;
-      }
-      else if ( c == ( unsigned char ) '\x09a' )
-      {                         /* PgUp */
-         get_first_command(  );
-         curr_char_pos = *read_size = display_command( buffer );
-         tail_col = head_col + *read_size;
-      }
-      else if ( ( c == ( unsigned char ) '\x094' ) || ( c == 27 ) )
-      {                         /* PgDn or Esc */
-         ptr1 = ptr2 = end_ptr;
-         curr_char_pos = *read_size = display_command( buffer );
-         tail_col = head_col + *read_size;
-      }
-
-      /****** Cursor Editing Keys ******/
-
-      else if ( c == ( unsigned char ) '\x083' )
-      {                         /* Left arrow */
-         get_cursor_position( &row, &col );
-
-         /* Prevents moving the cursor into the prompt */
-         if ( col > head_col )
-         {
-            move_cursor( row, --col );
-            curr_char_pos--;
+      if ( line_editing )
+      {
+         if ( c == 0x81 )
+         {                         /* Up arrow */
+            get_prev_command(  );
+            curr_char_pos = *read_size = display_command( buffer );
+            tail_col = head_col + *read_size;
+            keyfunc = 1;
          }
-      }
-#if 0
-      else if ( c == ( unsigned char ) '\x0aa' )
-      {                         /* Ctrl + Left arrow */
-         get_cursor_position( &row, &col );
-         if ( col > head_col )
-         {
-            col--;
-            curr_char_pos--;
-            do
+         else if ( c == 0x82 )
+         {                         /* Down arrow */
+            get_next_command(  );
+            curr_char_pos = *read_size = display_command( buffer );
+            tail_col = head_col + *read_size;
+            keyfunc = 1;
+         }
+         else if ( c == 0x9a )
+         {                         /* PgUp */
+            get_first_command(  );
+            curr_char_pos = *read_size = display_command( buffer );
+            tail_col = head_col + *read_size;
+            keyfunc = 1;
+         }
+         else if ( ( c == 0x94 ) || ( c == 27 ) )
+         {                         /* PgDn or Esc */
+            ptr1 = ptr2 = end_ptr;
+            curr_char_pos = *read_size = display_command( buffer );
+            tail_col = head_col + *read_size;
+            keyfunc = 1;
+         }
+
+         /****** Cursor Editing Keys ******/
+
+         else if ( c == 0x83 )
+         {                         /* Left arrow */
+            get_cursor_position( &row, &col );
+
+            /* Prevents moving the cursor into the prompt */
+            if ( col > head_col )
             {
-               /* Decrement until a ' ' is found */
-               col--;
+               move_cursor( row, --col );
                curr_char_pos--;
             }
-            while ( ( buffer[curr_char_pos] != ' ' ) && ( col >= head_col ) );
-            curr_char_pos++;
-            move_cursor( row, ++col );
+            keyfunc = 1;
          }
-      }
-#endif
-      else if ( c == ( unsigned char ) '\x084' )
-      {                         /* Right arrow */
-         get_cursor_position( &row, &col );
-
-         /* Prevents moving the cursor beyond the end of the input line */
-         if ( col < tail_col )
-         {
-            move_cursor( row, ++col );
-            curr_char_pos++;
-         }
-      }
 #if 0
-      else if ( c == ( unsigned char ) '\x0ba' )
-      {                         /* Ctrl + Right arrow */
-         get_cursor_position( &row, &col );
-         if ( col < tail_col )
-         {
-            do
+         else if ( c == ( unsigned char ) '\x0aa' )
+         {                         /* Ctrl + Left arrow */
+            get_cursor_position( &row, &col );
+            if ( col > head_col )
             {
-               /* Increment until a ' ' is found */
-               col++;
-               curr_char_pos++;
-            }
-            while ( ( buffer[curr_char_pos] != ' ' ) && ( col < tail_col ) );
-
-            if ( col == tail_col )
-            {
-               move_cursor( row, tail_col );
-            }
-            else
-            {
+               col--;
+               curr_char_pos--;
+               do
+               {
+                  /* Decrement until a ' ' is found */
+                  col--;
+                  curr_char_pos--;
+               }
+               while ( ( buffer[curr_char_pos] != ' ' ) && ( col >= head_col ) );
                curr_char_pos++;
                move_cursor( row, ++col );
             }
          }
-      }
 #endif
-      else if ( c == ( unsigned char ) '\x092' )
-      {                         /* End */
-         move_cursor( row, tail_col );
-         curr_char_pos = init_char_pos + *read_size;
-      }
-      else if ( c == ( unsigned char ) '\x098' )
-      {                         /* Home */
-         move_cursor( row, head_col );
-         curr_char_pos = init_char_pos;
-      }
-
-      else if ( c == ( unsigned char ) '\x096' )
-      {                         /* Delete */
-// ZSCII 0x96 is keypad 5, not delete.
-#if 0
-         if ( curr_char_pos < *read_size )
-         {
+         else if ( c == 0x84 )
+         {                         /* Right arrow */
             get_cursor_position( &row, &col );
 
-            /* Moves the input line one to the left */
-            for ( loop = curr_char_pos; loop < *read_size; loop++ )
+            /* Prevents moving the cursor beyond the end of the input line */
+            if ( col < tail_col )
             {
-               buffer[loop] = buffer[loop + 1];
+               move_cursor( row, ++col );
+               curr_char_pos++;
             }
-
-            /* Decrements the end of the input line and the *read_size value */
-            tail_col--;
-            ( *read_size )--;
-
-            /* Displays the input line */
-            clear_line(  );
-
-            for ( loop = curr_char_pos; loop < *read_size; loop++ )
+            keyfunc = 1;
+         }
+#if 0
+         else if ( c == ( unsigned char ) '\x0ba' )
+         {                         /* Ctrl + Right arrow */
+            get_cursor_position( &row, &col );
+            if ( col < tail_col )
             {
-               display_char( translate_from_zscii( buffer[loop] ) );
-            }
+               do
+               {
+                  /* Increment until a ' ' is found */
+                  col++;
+                  curr_char_pos++;
+               }
+               while ( ( buffer[curr_char_pos] != ' ' ) && ( col < tail_col ) );
 
-            /* Restores the cursor position */
-            move_cursor( row, col );
+               if ( col == tail_col )
+               {
+                  move_cursor( row, tail_col );
+               }
+               else
+               {
+                  curr_char_pos++;
+                  move_cursor( row, ++col );
+               }
+            }
          }
 #endif
-      }
-      else if ( c >= 133 && c <= 144 )
-      {                         /* F1 - F12 */
-      }
-      else if ( c == '\b' )
-      {                         /* Backspace */
-         get_cursor_position( &row, &col );
-         if ( col > head_col )
-         {
-            move_cursor( row, --col );
-            clear_line(  );
-            for ( loop = curr_char_pos; loop < *read_size; loop++ )
-            {
-               buffer[loop - 1] = buffer[loop];
-               display_char( translate_from_zscii( buffer[loop - 1] ) );
-            }
-            curr_char_pos--;
-            tail_col--;
-            ( *read_size )--;
-            move_cursor( row, col );
+         else if ( c == 0x92 )
+         {                         /* End */
+            move_cursor( row, tail_col );
+            curr_char_pos = init_char_pos + *read_size;
+            keyfunc = 1;
+         }
+         else if ( c == 0x98 )
+         {                         /* Home */
+            move_cursor( row, head_col );
+            curr_char_pos = init_char_pos;
+            keyfunc = 1;
          }
 
-      }
-      else
-      {                         /* Normal key action */
-
-         if ( *read_size == ( buflen - 1 ) )
-         {                      /* Ring bell if buffer is full */
-            putchar( '\a' );
-         }
-         else
-         {                      /* Scroll line if return key pressed */
-            if ( c == '\r' || c == '\n' )
-            {
-               c = '\n';
-               move_cursor( row, tail_col );
-               scroll_line(  );
-
-               /* Add the current command to the command buffer */
-
-               if ( *read_size > space_avail )
-               {
-                  do
-                  {
-                     delete_command(  );
-                  }
-                  while ( *read_size > space_avail );
-               }
-               if ( *read_size > 0 )
-               {
-                  add_command( buffer, *read_size );
-               }
-
-               /* Return key if it is a line terminator */
-
-               return ( ( unsigned char ) c );
-
-            }
-            else
+// ZSCII 0x96 is keypad 5, not delete.
+#if 0
+         else if ( c == ( unsigned char ) '\x096' )
+         {                         /* Delete */
+            if ( curr_char_pos < *read_size )
             {
                get_cursor_position( &row, &col );
 
-               /* Used if the cursor is not at the end of the line */
-               if ( col < tail_col )
+               /* Moves the input line one to the left */
+               for ( loop = curr_char_pos; loop < *read_size; loop++ )
                {
+                  buffer[loop] = buffer[loop + 1];
+               }
 
-                  /* Moves the input line one character to the right */
+               /* Decrements the end of the input line and the *read_size value */
+               tail_col--;
+               ( *read_size )--;
 
-                  for ( loop = *read_size; loop >= curr_char_pos; loop-- )
+               /* Displays the input line */
+               clear_line(  );
+
+               for ( loop = curr_char_pos; loop < *read_size; loop++ )
+               {
+                  display_char( translate_from_zscii( buffer[loop] ) );
+               }
+
+               /* Restores the cursor position */
+               move_cursor( row, col );
+            }
+         }
+#endif
+      }
+      if ( !keyfunc )
+      {
+         if ( c >= 0x81 && c <= 0x9a )
+         {
+            int addr = get_word( H_FUNCTION_KEYS_OFFSET );
+            if ( h_type >= V5 && addr > 0 )
+            {
+               int t;
+               /* Check for game specifiec terminating character */
+               while ( ( t = get_byte( addr++ ) ) != 0 )
+               {
+                  if ( t == c || t == 255 )
                   {
-                     buffer[loop + 1] = buffer[loop];
+                     move_cursor( row, tail_col );
+                     return c;
+                  }
+               }
+            }
+         }
+         else if ( c == '\b' )
+         {                         /* Backspace */
+            get_cursor_position( &row, &col );
+            if ( col > head_col )
+            {
+               move_cursor( row, --col );
+               clear_line(  );
+               for ( loop = curr_char_pos; loop < *read_size; loop++ )
+               {
+                  buffer[loop - 1] = buffer[loop];
+                  display_char( translate_from_zscii( buffer[loop - 1] ) );
+               }
+               curr_char_pos--;
+               tail_col--;
+               ( *read_size )--;
+               move_cursor( row, col );
+            }
+
+         }
+         else if ( c != 27 )
+         {                         /* Normal key action */
+
+            if ( *read_size == ( buflen - 1 ) )
+            {                      /* Ring bell if buffer is full */
+               putchar( '\a' );
+            }
+            else
+            {                      /* Scroll line if return key pressed */
+               if ( c == '\r' || c == '\n' )
+               {
+                  c = '\n';
+                  move_cursor( row, tail_col );
+                  scroll_line(  );
+
+                  /* Add the current command to the command buffer */
+
+                  if ( *read_size > space_avail )
+                  {
+                     do
+                     {
+                        delete_command(  );
+                     }
+                     while ( *read_size > space_avail );
+                  }
+                  if ( *read_size > 0 )
+                  {
+                     add_command( buffer, *read_size );
                   }
 
-                  /* Puts the character into the space created by the
-                   * "for" loop above */
+                  /* Return key if it is a line terminator */
 
-                  buffer[curr_char_pos] = ( char ) c;
+                  return ( ( unsigned char ) c );
 
-                  /* Increment the end of the line values */
-
-                  ( *read_size )++;
-                  tail_col++;
-
-                  /* Move the cursor back to its original position */
-
-                  move_cursor( row, col );
-
-                  /* Redisplays the input line from the point of
-                   * * insertion */
-
-                  for ( loop = curr_char_pos; loop < *read_size; loop++ )
-                  {
-                     display_char( translate_from_zscii( buffer[loop] ) );
-                  }
-
-                  /* Moves the cursor to the next position */
-
-                  move_cursor( row, ++col );
-                  curr_char_pos++;
                }
                else
-               {                /* Used if the cursor is at the end of the line */
-                  buffer[curr_char_pos++] = ( char ) c;
-                  display_char( translate_from_zscii( c ) );
-                  ( *read_size )++;
-                  tail_col++;
+               {
+                  get_cursor_position( &row, &col );
+
+                  /* Used if the cursor is not at the end of the line */
+                  if ( col < tail_col )
+                  {
+
+                     /* Moves the input line one character to the right */
+
+                     for ( loop = *read_size; loop >= curr_char_pos; loop-- )
+                     {
+                        buffer[loop + 1] = buffer[loop];
+                     }
+
+                     /* Puts the character into the space created by the
+                      * "for" loop above */
+
+                     buffer[curr_char_pos] = ( char ) c;
+
+                     /* Increment the end of the line values */
+
+                     ( *read_size )++;
+                     tail_col++;
+
+                     /* Move the cursor back to its original position */
+
+                     move_cursor( row, col );
+
+                     /* Redisplays the input line from the point of
+                      * * insertion */
+
+                     for ( loop = curr_char_pos; loop < *read_size; loop++ )
+                     {
+                        display_char( translate_from_zscii( buffer[loop] ) );
+                     }
+
+                     /* Moves the cursor to the next position */
+
+                     move_cursor( row, ++col );
+                     curr_char_pos++;
+                  }
+                  else
+                  {                /* Used if the cursor is at the end of the line */
+                     buffer[curr_char_pos++] = ( char ) c;
+                     display_char( translate_from_zscii( c ) );
+                     ( *read_size )++;
+                     tail_col++;
+                  }
                }
             }
          }

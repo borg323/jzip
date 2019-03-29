@@ -94,7 +94,7 @@ static char *cmbufp;
 
 static char *CE, *CL, *CM, *CS, *DL, *MD, *ME, *MR, *SE, *SO, *TE, *TI, *UE, *US, *KD, *KL, *KR,
 
-      *KU, *RA, *SA, *KP, *KN, *KI, *KH, *Kd;
+      *KU, *RA, *SA, *KP, *KN, *KI, *KH, *Kd, *BL;
 
 #define GET_TC_STR(p1, p2) if ((p1 = tgetstr (p2, &cmbufp)) == NULL) p1 = ""
 
@@ -201,6 +201,8 @@ void initialize_screen(  )
    GET_TC_STR( KI, "kI" );      /* sent by Insert key                       */
    GET_TC_STR( KH, "kh" );      /* sent by Home key                         */
    GET_TC_STR( Kd, "kD" );      /* sent by Delete key                       */
+
+   GET_TC_STR( BL, "bl" );      /* bell                                     */
 
    disable_wrap = tgetflag( "am" );
    if ( *RA == '\0' || *SA == '\0' )
@@ -584,6 +586,12 @@ static void display_string( char *s )
 
 void display_char( int c )
 {
+   if ( c == 7 && BL )
+   {
+      tputs( BL, 1, outc );
+      return;
+   }
+
    outc( c );
 
    if ( ++current_col > screen_cols )
@@ -839,32 +847,35 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 
       /****** Previous Command Selection Keys ******/
 
-      if ( ( c >= 0x81 && c <= 0x9a ) || c == 27 || c == 0xff )
+      if ( line_editing )
       {
-         keyfunc = 1;
          if ( c == 0x81 )
          {                   /* Up arrow */
             get_prev_command(  );
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
+            keyfunc = 1;
          }
          else if ( c == 0x82 )
          {                   /* Down arrow */
             get_next_command(  );
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
+            keyfunc = 1;
          }
          else if ( c == 0x9a )
          {                   /* PgUp */
             get_first_command( );
             curr_char_pos = *read_size = display_command( buffer );
             tail_col = head_col + *read_size;
+            keyfunc = 1;
          }
          else if (c == 0x94 || c == 27)
          {                   /* PgDn or Esc */
              ptr1 = ptr2 = end_ptr;
              curr_char_pos = *read_size = display_command( buffer );
              tail_col = head_col + *read_size;
+             keyfunc = 1;
          }
 
          /****** Cursor Editing Keys ******/
@@ -880,6 +891,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                move_cursor( row, --col );
                curr_char_pos--;
             }
+            keyfunc = 1;
          }
          else if ( c == 0x84 )
          {                   /* Right arrow */
@@ -892,16 +904,19 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                move_cursor( row, ++col );
                curr_char_pos++;
             }
+            keyfunc = 1;
          }
          else if ( c == 0x92 )
          {                   /* End */
             move_cursor( row, tail_col );
             curr_char_pos = init_char_pos + *read_size;
+            keyfunc = 1;
          }
          else if ( c == 0x98 )
          {                   /* Home */
             move_cursor( row, head_col );
             curr_char_pos = init_char_pos;
+            keyfunc = 1;
          }
          else if ( c == 0xff )
          {                   /* Delete */
@@ -926,11 +941,29 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 
                move_cursor( row, col );
             }
+            keyfunc = 1;
          }
       }
       if ( !keyfunc )
       {
-         if ( c == '\b' )       /* Backspace */
+         if ( c >= 0x81 && c <= 0x9a )
+         {
+            int addr = get_word( H_FUNCTION_KEYS_OFFSET );
+            if ( h_type >= V5 && addr > 0 )
+            {
+               int t;
+               /* Check for game specifiec terminating character */
+               while ( ( t = get_byte( addr++ ) ) != 0 )
+               {
+                  if ( t == c || t == 255 )
+                  {
+                     move_cursor( row, tail_col );
+                     return c;
+                  }
+               }
+            }
+         }
+         else if ( c == '\b' || c == 0xff )     /* Backspace or Delete */
          {
             get_cursor_position( &row, &col );
             if ( col > head_col )
@@ -948,7 +981,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                move_cursor( row, col );
             }
          }
-         else
+         else if ( c != 27 )
          {
             /* Normal key action */
             if ( *read_size == ( buflen - 1 ) )

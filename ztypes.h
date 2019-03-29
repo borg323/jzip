@@ -519,6 +519,7 @@ extern int status_active;
 extern int status_size;
 
 extern char fTandy;
+extern char line_editing;
 extern char fIBMGraphics;
 
 extern int lines_written;
