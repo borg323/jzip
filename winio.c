@@ -48,8 +48,11 @@ static ZINT16 current_bg;
 extern ZINT16 default_fg;
 extern ZINT16 default_bg;
 
-int timed_read_key( int );
-int read_key( void );
+#define EXTENDED 1
+#define PLAIN    2
+
+int timed_read_key( int, int );
+int read_key( int );
 
 int BUFFER_SIZE;
 char *commands;
@@ -189,7 +192,7 @@ void reset_screen( void )
    {
       output_new_line(  );
       output_string( "[Hit any key to exit.]" );
-      ( void ) read_key(  );
+      ( void ) read_key( PLAIN );
       output_new_line(  );
 //      textmode( prevmode );
       SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), prevmode);
@@ -639,14 +642,14 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
       {
          if ( timeout == 0 )
          {
-            c = read_key(  );
+            c = read_key( EXTENDED );
          }
          else
          {
             int rem = timeout - ( clock() - t0 ) * 10 / CLOCKS_PER_SEC;
             c=-1;
             if(rem > 0)
-               c = timed_read_key( rem );
+               c = timed_read_key( EXTENDED, rem );
             if ( c == -1 )
                return ( c );
          }
@@ -778,10 +781,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
             curr_char_pos = init_char_pos;
             keyfunc = 1;
          }
-
-// ZSCII 0x96 is keypad 5, not delete.
-#if 0
-         else if ( c == ( unsigned char ) '\x096' )
+         else if ( c == 0x7f )
          {                         /* Delete */
             if ( curr_char_pos < *read_size )
             {
@@ -808,8 +808,8 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                /* Restores the cursor position */
                move_cursor( row, col );
             }
+            keyfunc = 1;
          }
-#endif
       }
       if ( !keyfunc )
       {
@@ -830,7 +830,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                }
             }
          }
-         else if ( c == '\b' )
+         else if ( c == '\b' || c==0x7f )
          {                         /* Backspace */
             get_cursor_position( &row, &col );
             if ( col > head_col )
@@ -946,18 +946,18 @@ int input_character( int timeout )
 
    if ( timeout == 0 )
    {
-      c = read_key(  );
+      c = read_key( PLAIN );
    }
    else
    {
-      c = timed_read_key( timeout );
+      c = timed_read_key( PLAIN, timeout );
    }
    return ( c );
 
 }                               /* input_character */
 
 
-int timed_read_key( int timeout )
+int timed_read_key( int mode, int timeout )
 {
    int c;
    register clock_t curr_tick, target_tick;
@@ -980,7 +980,7 @@ int timed_read_key( int timeout )
       }
       else
       {
-         c = read_key(  );
+         c = read_key( mode );
          if ( c > 31 || c == 8 || c == 13 || c == 27)
          {
             return ( c );
@@ -989,13 +989,13 @@ int timed_read_key( int timeout )
    }                            /* for */
 }                               /* timed_read_key */
 
-int read_key( void )
+int read_key( int mode )
 {
    int c;
-   DWORD mode, ct;
+   DWORD prevmode, ct;
    INPUT_RECORD event;
 
-   GetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), &mode );
+   GetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), &prevmode );
    SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), ENABLE_PROCESSED_INPUT );
 
  read_key_top:
@@ -1011,10 +1011,10 @@ int read_key( void )
       if ( c < 32 && !( c == 8 || c == 13 || c == 27 ) )
          goto read_key_top;
 
-      if ( c == 0x7f )
+      if ( mode == PLAIN && c == 0x7f )
          c = '\b';
 
-      SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), mode );
+      SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), prevmode );
       if ( !unicode && c >= 0xa0 )
          return '?';
       return ( translate_to_zscii( c ) );
@@ -1042,10 +1042,16 @@ int read_key( void )
       c = 0x9a;                        /* PgUp (NE)               */
    else if ( c >= 0x70 && c <= 0x7b )
       c += 21;                         /* Function keys F1 to F12 */
+   else if ( c == 0x2e )
+   {                                   /* Delete                  */
+      c = '\b';
+      if ( mode == EXTENDED )
+         c = 0x7f;
+   }
    else
       goto read_key_top;
 
-   SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), mode );
+   SetConsoleMode( GetStdHandle( STD_INPUT_HANDLE ), prevmode );
    return c;
 
 }                               /* read_key */

@@ -791,7 +791,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
             curr_char_pos = init_char_pos;
             keyfunc = 1;
          }
-         else if ( c == 0xff )
+         else if ( c == 0x7f )
          {                  /* Delete */
             if (curr_char_pos < *read_size)
             {
@@ -837,7 +837,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
                }
             }
          }
-         else if ( c == '\b' || c == 0xff )       /* Backspace or Delete */
+         else if ( c == '\b' || c == 0x7f )       /* Backspace or Delete */
          {
             get_cursor_position( &row, &col );
             if ( col > head_col )
@@ -1000,7 +1000,7 @@ static int wait_for_char( int timeout )
 
 }                               /* wait_for_char */
 
-/* mode == extended to return 0xff for DEL instread of 8 (BACKSPACE) */
+/* mode == extended to return 0x7f for DEL instread of 8 (BACKSPACE) */
 static int read_key( int mode )
 {
    int r;
@@ -1062,7 +1062,7 @@ static int read_key( int mode )
             return '\b';
          case KEY_DC:
             if ( mode == EXTENDED )
-               return 0xff;
+               return 0x7f;
             return '\b';
          default:
             r = ERR;
