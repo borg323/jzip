@@ -671,6 +671,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
    int init_char_pos, curr_char_pos;
    int loop, tail_col;
    int keyfunc = 0;
+   struct timeval t0, t1;
 
    /*
     * init_char_pos : the initial cursor location
@@ -688,6 +689,8 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 
    ptr1 = ptr2 = end_ptr;
 
+   gettimeofday( &t0, NULL );
+
    for ( ;; )
    {
       keyfunc = 0;
@@ -698,7 +701,13 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 
       if ( timeout != 0 )
       {
-         if ( wait_for_char( timeout ) )
+         int dt, rem_time;
+
+         gettimeofday( &t1, NULL );
+         dt = ( t1.tv_sec - t0.tv_sec ) * 10 + ( t1.tv_usec - t0.tv_usec ) / 100000;
+         rem_time = timeout - dt;
+
+         if ( rem_time <= 0 || wait_for_char( rem_time ) )
             return ( -1 );
       }
       c = read_key( EXTENDED );

@@ -611,6 +611,7 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
    int init_char_pos, curr_char_pos;
    int loop, tail_col;
    int keyfunc = 0;
+   clock_t t0;
 
    /*
     * init_char_pos : the initial cursor location
@@ -620,22 +621,6 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
     * tail_col: the end of the input line (used for cursor position)
     */
 
-/*
-    if (timeout != 0) {
-	ftime (&timenow);
-/*	tmptr = gmtime (&timenow.time);
-	target_second = (tmptr->tm_sec + (timeout/10));*/
-
-/*	target_second = timenow.time + (timeout/10);
-	target_millisecond = timenow.millitm + (timeout*10);
-	while (target_millisecond >= 1000)
-	{
-	   target_millisecond -= 1000;
-	   target_second++;
-	}
-
-    }
-*/
    get_cursor_position( &row, &col );
    head_col = start_col;
    tail_col = start_col + *read_size;
@@ -643,6 +628,8 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
    init_char_pos = curr_char_pos = col - start_col;
 
    ptr1 = ptr2 = end_ptr;
+
+   t0 = clock();
 
    for ( ;; )
    {
@@ -656,7 +643,10 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
          }
          else
          {
-            c = timed_read_key( timeout );
+            int rem = timeout - ( clock() - t0 ) * 10 / CLOCKS_PER_SEC;
+            c=-1;
+            if(rem > 0)
+               c = timed_read_key( rem );
             if ( c == -1 )
                return ( c );
          }
