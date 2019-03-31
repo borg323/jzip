@@ -35,6 +35,7 @@
 
 #define BRIGHT 0x08
 static unsigned short emphasis = BRIGHT;
+static char reverse = 0;
 
 static DWORD prevmode;
 static unsigned short prevattr;
@@ -360,12 +361,12 @@ void restore_cursor_position( void )
 
 void set_attribute( int attribute )
 {
-   int new_fg, new_bg;
    unsigned short attrib;
 
    if ( attribute == NORMAL )
    {
       attrib = current_fg + (current_bg << 4);
+      reverse = 0;
    }
    else
    {
@@ -380,6 +381,7 @@ void set_attribute( int attribute )
    {
       attrib &= ~0x77;
       attrib |= current_bg + (current_fg << 4);
+      reverse = 1;
    }
 
    if ( attribute & BOLD )
@@ -394,8 +396,6 @@ void set_attribute( int attribute )
 /*
    if ( attribute & FIXED_FONT )
    {
-      new_fg = current_fg;
-      new_bg = current_bg;
    }
 */
    SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), attrib );
@@ -1114,8 +1114,9 @@ void scroll_line( void )
 
 void set_colours( zword_t foreground, zword_t background )
 {
-   ZINT16 fg, bg;
+   ZINT16 fg = current_fg, bg = current_bg;
    int colour_map[] = { BLACK, RED, GREEN, BROWN, BLUE, MAGENTA, CYAN, WHITE };
+   CONSOLE_SCREEN_BUFFER_INFO info;
 
    /* Translate from Z-code colour values to natural colour values */
    if ( ( ZINT16 ) foreground >= 1 && ( ZINT16 ) foreground <= 9 )
@@ -1128,8 +1129,14 @@ void set_colours( zword_t foreground, zword_t background )
    }
 
    /* Set foreground and background colour */
-   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE),
-      fg + (bg << 4));
+   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+
+   if (reverse)
+      SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE),
+         (bg + (fg << 4)) | (info.wAttributes & ~0xff));
+   else
+      SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE),
+         (fg + (bg << 4)) | (info.wAttributes & ~0xff));
 
    /* Save new foreground and background colours for restoring colour */
    current_fg = ( ZINT16 ) fg;

@@ -1343,7 +1343,7 @@ static void sig_rundown(  )
  */
 void set_colours( zword_t foreground, zword_t background )
 {
-   int fg = 0, bg = 0;
+   int fg = current_fg, bg = current_bg;
    static int bgset = 0;
 
    int fg_colour_map[] = { 30, 31, 32, 33, 34, 35, 36, 37 };

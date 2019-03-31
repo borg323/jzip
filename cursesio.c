@@ -1115,7 +1115,7 @@ static void rundown(  )
 #if defined HARD_COLORS
 void set_colours( zword_t foreground, zword_t background )
 {
-   int fg = 0, bg = 0;
+   int fg = current_fg, bg = current_bg;
 
    /* Translate from Z-code colour values to natural colour values */
 
