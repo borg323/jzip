@@ -224,6 +224,14 @@ void z_set_cursor( zword_t row, zword_t column )
 
    if ( formatting == OFF && screen_window == STATUS_WINDOW )
    {
+      if ( row < 1 || row > screen_rows || column < 1 || column > screen_cols )
+      {
+#ifdef STRICTZ
+         report_strictz_error( STRZERR_MOV_CURSOR, "@set_cursor outside the screen!" );
+#endif
+         return;
+      }
+
       move_cursor( row, column );
    }
 #ifdef STRICTZ
