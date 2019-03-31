@@ -113,8 +113,16 @@ void z_split_window( zword_t lines )
 
    if ( lines )
    {
+      if ( screen_window == TEXT_WINDOW)
+      {
+         /* Ensure cursor stays outside the status window */
+         int row, col;
+         get_cursor_position( &row, &col );
+         if ( row <= lines && lines < screen_rows )
+            move_cursor( lines + 1, 1 );
+      }
 
-      /* If size is non zero the turn on the status window */
+      /* If size is non zero then turn on the status window */
 
       status_active = ON;
 
