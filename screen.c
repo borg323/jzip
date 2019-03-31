@@ -237,7 +237,10 @@ void z_set_cursor( zword_t row, zword_t column )
 #ifdef STRICTZ
          report_strictz_error( STRZERR_MOV_CURSOR, "@set_cursor outside the screen!" );
 #endif
-         return;
+         if ( row < 1 ) row = 1;
+         if ( row > screen_rows ) row = screen_rows;
+         if ( column < 1 ) column = 1;
+         if ( column > screen_cols ) column = screen_cols;
       }
 
       move_cursor( row, column );
