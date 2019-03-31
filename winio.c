@@ -1040,6 +1040,8 @@ int read_key( int mode )
       c = 0x98;                        /* Home (NW)               */
    else if ( c == 0x21 )
       c = 0x9a;                        /* PgUp (NE)               */
+   else if ( c == 0x2d )
+      c = 0x91;                        /* Insert                  */
    else if ( c >= 0x70 && c <= 0x7b )
       c += 21;                         /* Function keys F1 to F12 */
    else if ( c == 0x2e )
