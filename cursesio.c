@@ -125,7 +125,7 @@ void outc( int c )
    if ( c == '\n' )
    {
       if ( ++y < LINES )
-         move(y, 0);
+         move( y, 0 );
    }
    else
    {
@@ -977,6 +977,8 @@ static int wait_for_char( int timeout )
 
    if ( timeout == 0 )
       return ( -1 );
+
+   refresh();
 
    tv.tv_sec = ( timeout * 100000 ) / 1000000;
    tv.tv_usec = ( timeout * 100000 ) % 1000000;
