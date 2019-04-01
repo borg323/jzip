@@ -117,9 +117,15 @@ void z_split_window( zword_t lines )
       {
          /* Ensure cursor stays outside the status window */
          int row, col;
+         flush_buffer(FALSE);
          get_cursor_position( &row, &col );
-         if ( row <= lines && lines < screen_rows )
-            move_cursor( lines + 1, 1 );
+         if ( row <= lines )
+         {
+            if ( lines < screen_rows )
+               move_cursor( lines + 1, 1 );
+            else
+               move_cursor( lines, 1 );
+         }
       }
 
       /* If size is non zero then turn on the status window */
