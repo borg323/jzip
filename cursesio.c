@@ -139,10 +139,12 @@ void outc( int c )
          }
          else
          {
-            cchar_t ch;
-            wchar_t wch = c;
-            setcchar( &ch, &wch, current_attrib, A_COLOR & (8 * current_bg + current_fg + 1), NULL );
-            add_wchnstr( &ch, 1 );
+            cchar_t ch[2];
+            wchar_t wch[2];
+            wch[0] = c;
+            wch[1] = 0;
+            setcchar( ch, wch, current_attrib, A_COLOR & (8 * current_bg + current_fg + 1), NULL );
+            add_wchnstr( ch, 1 );
          }
          move( current_row - 1, COLS );
       }
@@ -150,10 +152,12 @@ void outc( int c )
          addch( c );
       else
       {
-         cchar_t ch;
-         wchar_t wch = c;
-         setcchar( &ch, &wch, current_attrib, A_COLOR & (8 * current_bg + current_fg + 1), NULL );
-         add_wch( &ch );
+         cchar_t ch[2];
+         wchar_t wch[2];
+         wch[0] = c;
+         wch[1] = 0;
+         setcchar( ch, wch, current_attrib, A_COLOR & (8 * current_bg + current_fg + 1), NULL );
+         add_wch( ch );
       }
    }
    refresh( );
