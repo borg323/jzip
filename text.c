@@ -624,7 +624,9 @@ void write_char( int c )
    }
    else if ( formatting == ON && screen_window == TEXT_WINDOW )
    {
-      if ( fit_line( line, line_pos, screen_cols - right_margin ) == 0 || char_count < 1 )
+      int row, col;
+      get_cursor_position( &row, &col );
+      if ( fit_line( line, line_pos + col - 1, screen_cols - right_margin ) == 0 || char_count < 1 )
       {
          /* Null terminate the line */
          line[line_pos] = '\0';
