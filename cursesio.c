@@ -182,17 +182,24 @@ void initialize_screen(  )
 
    set_escdelay( 0 );
 
-   /* set all colour pairs to be used */
-   start_color();
-   for ( i = 0; i < 8; i++ )
-       for ( j = 0; j < 8; j++ )
-         init_pair( 8 * j + i + 1, colour_map[i], colour_map[j] );
-
    /* COLS and LINES set by curses */
    screen_cols = COLS;
    screen_rows = LINES;
 
 #if defined HARD_COLORS
+   start_color();
+
+   /* set colors */
+#if 0
+   for ( i = 0; i < 8; i++ )
+      init_color( colour_map[i], ( i & 1 ) * 1000, ( i & 2 ) * 500, ( i & 4 ) * 250 );
+#endif
+
+   /* set all colour pairs to be used */
+   for ( i = 0; i < 8; i++ )
+       for ( j = 0; j < 8; j++ )
+         init_pair( 8 * j + i + 1, colour_map[i], colour_map[j] );
+
    set_colours( 1, 1 );
 #endif
 
@@ -262,14 +269,14 @@ void reset_screen(  )
    /* only do this stuff on exit when called AFTER initialize_screen */
    if ( interp_initialized )
    {
-      scroll_line();
-      display_string( "[Hit any key to exit.]" );
-      getch(  );
-
       delete_status_window(  );
       select_text_window(  );
 
+      display_string( "[Hit any key to exit.]" );
+      getch(  );
+
       set_attribute( NORMAL );
+      set_colours( 1, 1 );
 
       erase(  );
       set_cbreak_mode( 0 );
@@ -341,9 +348,14 @@ void clear_line(  )
 {
 //   clrtoeol(  );
    int i;
+   int x, y;
+   chtype s = ' ' | COLOR_PAIR( 8 * current_bg + current_fg + 1 );
 
-   for ( i = 1; i <= screen_cols; i++ )
-      outc( ' ' );
+   getyx( stdscr, y, x );
+
+   for ( i = x; i < screen_cols; i++ )
+      mvaddchnstr( y, i, &s, 1 );
+
 }                               /* clear_line */
 
 void clear_text_window(  )
@@ -487,10 +499,10 @@ void scroll_line(  )
    if ( ++current_row > screen_rows )
    {
       current_row = screen_rows;
+      move_cursor( current_row, 1 );
+      clear_line();
+      move_cursor( current_row, 1 );
    }
-   move_cursor( current_row, 1 );
-   clear_line();
-   move_cursor( current_row, 1 );
 
 }                               /* scroll_line */
 
