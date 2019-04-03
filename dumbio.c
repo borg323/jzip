@@ -466,7 +466,11 @@ int input_line( int buflen, char *buffer, int timeout, int *read_size, int start
 {
    int c;
 
-//   *read_size = 0;
+   while ( *read_size )
+   {
+      display_char( '\b' );
+      ( *read_size )--;
+   }
 
    while ( ( c = read_char(  ) ) != '\n' )
    {
