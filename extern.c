@@ -188,6 +188,7 @@ int status_pos = 0;
 /* Dynamic buffer data */
 
 unsigned short *line = NULL;
+char *style = NULL;
 unsigned short *status_line = NULL;
 
 /* Character translation tables */

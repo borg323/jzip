@@ -664,6 +664,7 @@ void write_char( int c )
                if ( right_len > 0 )
                {
                   memmove( line, cp, right_len * sizeof( unsigned short ) );
+                  memmove( style, &style[cp - line], right_len );
                   line_pos = right_len;
                }
             }
@@ -675,6 +676,7 @@ void write_char( int c )
       {
          line[line_pos++] = c;
          line[line_pos] = 0;
+         style[line_pos] = 0;
 
          /* Wrap the line when there is a newline in the stream. */
          cp = strrushort( line, 13 );
@@ -694,6 +696,7 @@ void write_char( int c )
             if ( right_len > 0 )
             {
                memmove( line, cp, right_len * sizeof( unsigned short ) );
+               memmove( style, &style[cp - line], right_len );
                line_pos = right_len;
             }
          }
@@ -726,7 +729,14 @@ void z_set_text_style( zword_t mode )
 {
    if ( mode >= MIN_ATTRIBUTE  && mode <= MAX_ATTRIBUTE )
    {
-      flush_buffer( FALSE );
+      if ( !redirect_depth && formatting == ON && screen_window == TEXT_WINDOW )
+      {
+         if ( mode == NORMAL)
+            style[line_pos] = 0x80;
+         else
+            style[line_pos] |= mode;
+        return;
+      }
       set_attribute( mode );
    }
    else
@@ -758,21 +768,27 @@ void write_string( const char *s )
 
 void flush_buffer( int flag )
 {
-   unsigned short *s;
+   int i;
 
    /* Terminate the line */
    line[line_pos] = '\0';
 
    /* Send the line buffer to the printer */
-   s = line;
-   while ( *s )
-      script_char( *s++ );
+   for ( i = 0; line[i]; i++ )
+      script_char( line[i] );
    flush_script(  );            
 
    /* Send the line buffer to the screen */
-   s = line;
-   while ( *s )
-      output_char( *s++ );
+   for ( i = 0; i <= line_pos; i++ )
+   {
+      if ( style[i] & 0x80 )
+         set_attribute( NORMAL );
+      if ( style[i] & 0x7f )
+         set_attribute( style[i] & 0x7f );
+      if ( !line[i] )
+         break;
+      output_char( line[i] );
+   }
 
    /* Reset the character count only if a carriage return is expected */
    if ( flag == TRUE )
@@ -781,6 +797,7 @@ void flush_buffer( int flag )
    }
 
    /* Reset the buffer pointer */
+   style[0] = 0;
    line_pos = 0;
 
 }                               /* flush_buffer */

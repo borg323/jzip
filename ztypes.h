@@ -429,7 +429,7 @@ zobjectv4_t;
 #define BOLD          2
 #define EMPHASIS      4
 #define FIXED_FONT    8
-#define MAX_ATTRIBUTE 8
+#define MAX_ATTRIBUTE 15
 
 #define TEXT_FONT     1
 #define GRAPHICS_FONT 3
@@ -526,6 +526,7 @@ extern int lines_written;
 extern int status_pos;
 
 extern unsigned short *line;
+extern char *style;
 extern unsigned short *status_line;
 
 extern char lookup_table[3][26];
