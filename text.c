@@ -625,6 +625,11 @@ void write_char( int c )
    else if ( formatting == ON && screen_window == TEXT_WINDOW )
    {
       int row, col;
+      if ( c == 13 )
+      {
+         z_new_line(  );
+         return;
+      }
       get_cursor_position( &row, &col );
       if ( fit_line( line, line_pos + col - 1, screen_cols - right_margin ) == 0 || char_count < 1 )
       {
@@ -635,7 +640,7 @@ void write_char( int c )
          if ( c == ' ' )
          {
             z_new_line(  );
-            c = '\0';
+            return;
          }
          else
          {
@@ -648,8 +653,7 @@ void write_char( int c )
                /* Output the buffer and a new line */
                z_new_line(  );
             }
-            
-            if (cp != NULL) 
+            else
             {
                /* Terminate the line at the last space */
                *cp++ = '\0';
@@ -677,29 +681,6 @@ void write_char( int c )
          line[line_pos++] = c;
          line[line_pos] = 0;
          style[line_pos] = 0;
-
-         /* Wrap the line when there is a newline in the stream. */
-         cp = strrushort( line, 13 );
-
-         if ( cp!= NULL )
-         {
-            /* Terminate the line at the last space */
-            *cp++ = '\0';
-
-            /* Calculate the text length after the last space */
-            right_len = &line[line_pos] - cp;
-
-            /* Output the buffer and a new line */
-            z_new_line(  );
-
-            /* If any text to wrap then move it to the start of the line */
-            if ( right_len > 0 )
-            {
-               memmove( line, cp, right_len * sizeof( unsigned short ) );
-               memmove( style, &style[cp - line], right_len );
-               line_pos = right_len;
-            }
-         }
 
          if ( !iswcntrl( c ) )
          {
