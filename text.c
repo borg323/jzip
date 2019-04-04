@@ -38,7 +38,6 @@
  */
 
 #include "ztypes.h"
-#include <wctype.h>
 
 static int saved_formatting = ON;
 static int story_buffer = 0;
