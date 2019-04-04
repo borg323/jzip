@@ -637,9 +637,9 @@ void delete_command(  )
 
    do
    {
-      for ( loop = 0; loop < end_ptr; loop++ )
+      for ( loop = 1; loop < end_ptr; loop++ )
       {
-         commands[loop] = commands[loop + 1];
+         commands[loop - 1] = commands[loop];
       }
       end_ptr--;
       space_avail++;
@@ -649,9 +649,9 @@ void delete_command(  )
 
    /* ...then delete the '\n' */
 
-   for ( loop = 0; loop < end_ptr; loop++ )
+   for ( loop = 1; loop < end_ptr; loop++ )
    {
-      commands[loop] = commands[loop + 1];
+      commands[loop - 1] = commands[loop];
    }
    end_ptr--;
    space_avail++;
