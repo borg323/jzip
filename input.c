@@ -69,7 +69,7 @@ void z_read_char( int argc, zword_t * argv )
 
    /* Flush any buffered output before read */
 
-   flush_buffer( FALSE );
+   flush_buffer(  );
 
    /* Reset line count */
 
@@ -99,7 +99,7 @@ void z_read_char( int argc, zword_t * argv )
 
          do
          {
-            flush_buffer( FALSE );
+            flush_buffer(  );
             c = input_character( ( int ) argv[1] );
          }
          while ( c == -1 && z_call( 1, arg_list, ASYNC ) == 0 );
@@ -297,7 +297,7 @@ void z_sread_aread( int argc, zword_t * argv )
 
    /* Flush any buffered output before read */
 
-   flush_buffer( TRUE );
+   flush_buffer(  );
 
    /* Reset line count */
 
@@ -413,7 +413,7 @@ int get_line( char *cbuf, zword_t timeout, zword_t action_routine )
             int i;
             for (i = 0; i < read_size; i++ )
                write_zchar( ( unsigned char ) buffer[i] );
-            flush_buffer( FALSE );
+            flush_buffer(  );
          }
          move_cursor( row, prev_col );
          c = input_line( buflen, buffer, timeout, &read_size, start_col );

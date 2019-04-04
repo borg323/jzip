@@ -792,7 +792,7 @@ void z_print_unicode( zword_t );
 void z_check_unicode( zword_t );
 void decode_text( unsigned long * );
 void encode_text( int, const char *, ZINT16 * );
-void flush_buffer( int );
+void flush_buffer( void );
 void print_time( int, int );
 int translate_from_zscii( int );
 int translate_to_zscii( int );

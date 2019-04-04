@@ -46,7 +46,6 @@ static int story_pos = 0;
 static int story_count = 0;
 
 static int line_pos = 0;
-static int char_count = 0;
 
 /*
  * decode_text
@@ -631,7 +630,7 @@ void write_char( int c )
          return;
       }
       get_cursor_position( &row, &col );
-      if ( fit_line( line, line_pos + col - 1, screen_cols - right_margin ) == 0 || char_count < 1 )
+      if ( fit_line( line, line_pos + col - 1, screen_cols - right_margin ) == 0)
       {
          /* Null terminate the line */
          line[line_pos] = '\0';
@@ -681,11 +680,6 @@ void write_char( int c )
          line[line_pos++] = c;
          line[line_pos] = 0;
          style[line_pos] = 0;
-
-         if ( !iswcntrl( c ) )
-         {
-            char_count--;
-         }
       }
    }
    else
@@ -747,7 +741,7 @@ void write_string( const char *s )
  *
  */
 
-void flush_buffer( int flag )
+void flush_buffer( void )
 {
    int i;
 
@@ -771,12 +765,6 @@ void flush_buffer( int flag )
       output_char( line[i] );
    }
 
-   /* Reset the character count only if a carriage return is expected */
-   if ( flag == TRUE )
-   {
-      char_count = screen_cols - right_margin;
-   }
-
    /* Reset the buffer pointer */
    style[0] = 0;
    line_pos = 0;
@@ -795,7 +783,7 @@ void flush_buffer( int flag )
 void z_buffer_mode( zword_t flag )
 {
    /* Flush any current output */
-   flush_buffer( FALSE );
+   flush_buffer(  );
 
    /* Set formatting depending on the flag */
    if ( flag )
@@ -1110,7 +1098,7 @@ void z_new_line( void )
    /* Only flush buffer if story redirect is off */
    if ( redirect_depth == 0 )
    {
-      flush_buffer( TRUE );
+      flush_buffer(  );
       script_new_line(  );
       output_new_line(  );
    }

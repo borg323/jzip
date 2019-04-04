@@ -197,7 +197,7 @@ void z_restart( void )
 
    /* Reset output buffer */
 
-   flush_buffer( TRUE );
+   flush_buffer(  );
 
    /* Reset text control flags */
 

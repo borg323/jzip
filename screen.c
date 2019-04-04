@@ -46,7 +46,7 @@ void z_set_window( zword_t w )
 {
    int row, col;
 
-   flush_buffer( FALSE );
+   flush_buffer(  );
 
    screen_window = w;
 
@@ -117,7 +117,7 @@ void z_split_window( zword_t lines )
       {
          /* Ensure cursor stays outside the status window */
          int row, col;
-         flush_buffer(FALSE);
+         flush_buffer(  );
          get_cursor_position( &row, &col );
          if ( row <= lines )
          {
@@ -184,7 +184,7 @@ void z_split_window( zword_t lines )
 
 void z_erase_window( zword_t w )
 {
-   flush_buffer( TRUE );
+   flush_buffer(  );
 
    if ( ( zbyte_t ) w == ( zbyte_t ) Z_SCREEN )
    {
@@ -626,7 +626,7 @@ void z_set_colour( zword_t foreground, zword_t background )
       fatal( "Bad colour!" );
 
 
-   flush_buffer( FALSE );
+   flush_buffer(  );
 
    set_colours( foreground, background );
 
