@@ -666,7 +666,7 @@ void write_char( int c )
                if ( right_len > 0 )
                {
                   memmove( line, cp, right_len * sizeof( unsigned short ) );
-                  memmove( style, &style[cp - line], right_len );
+                  memmove( style, &style[cp - line], right_len + 1 );
                   line_pos = right_len;
                }
             }
