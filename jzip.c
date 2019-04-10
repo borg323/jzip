@@ -57,6 +57,8 @@ int main( int argc, char *argv[] )
 {
    process_arguments( argc, argv );
 
+   check_blorb();
+
    configure( V1, V8 );
 
    initialize_screen(  );

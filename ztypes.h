@@ -591,6 +591,7 @@ int z_save( int, zword_t, zword_t, zword_t );
 void z_restore_undo( void );
 void z_save_undo( void );
 void z_open_playback( int );
+int check_blorb( void );
 void close_record( void );
 void close_script( void );
 void close_story( void );

@@ -128,6 +128,77 @@ int analyze_exefile( void )
 
 }                               /* analyze_exefile */
 
+/*
+ * check_blorb
+ *
+ * This function checks if the game looks like a blorb file and finds
+ * the first (supposedly only) ZCOD IFF chunk.
+ *
+ */
+int check_blorb( void )
+{
+   int c, i, n, offset;
+   char s[4];
+
+   jz_seek( gfp, story_offset, SEEK_SET );
+
+   /* Look for the blorb IFF header. */
+   for ( i = 0; i < 4; i++)
+   {
+      c = jz_getc( gfp );
+      if ( c == EOF )
+         return FALSE;
+      s[i] = c;
+   }
+   if ( strncmp( s, "FORM", 4 ) )
+      return FALSE;
+
+   jz_seek( gfp, story_offset + 8, SEEK_SET );
+
+   for ( i = 0; i < 4; i++)
+   {
+      c = jz_getc( gfp );
+      if ( c == EOF )
+         return FALSE;
+      s[i] = c;
+   }
+   if ( strncmp( s, "IFRS", 4 ) )
+      return FALSE;
+
+   offset = 12;
+   while ( !jz_seek( gfp, story_offset + offset, SEEK_SET ) )
+   {
+      /* Read chunk header. */
+      for ( i = 0; i < 4; i++)
+      {
+         c = jz_getc( gfp );
+         if ( c == EOF )
+            return FALSE;
+         s[i] = c;
+      }
+      n = 0;
+      for ( i = 0; i < 4; i++)
+      {
+         c = jz_getc( gfp );
+         if ( c == EOF )
+            return FALSE;
+         n = n * 256 + c;
+      }
+      offset += 8;
+      /* Search for ZCOD. */
+      if ( !strncmp( s, "ZCOD", 4 ) )
+      {
+         story_offset += offset;
+         return TRUE;
+      }
+      /* Ensure that progress is made. */
+      if ( n < 0 )
+         break;
+      offset += n;
+   }
+   /* Either no ZCOD in file or read a negative chunk size (error). */
+   return FALSE;
+}                               /* check_blorb */
 
 /*
  * set_names
