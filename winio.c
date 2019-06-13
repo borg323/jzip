@@ -1146,6 +1146,7 @@ void set_colours( zword_t foreground, zword_t background )
 
 int check_font_char( int c )
 {
+#if _WIN32_WINNT >= 0x0600
    HWND handle = GetConsoleWindow();
    HDC dc = GetDC(handle);
    HGDIOBJ of;
@@ -1188,5 +1189,8 @@ int check_font_char( int c )
    ReleaseDC(handle, dc);
 
    return supported;
+#else
+   return 1;
+#endif
 }
 
