@@ -1144,49 +1144,66 @@ void set_colours( zword_t foreground, zword_t background )
 
 }                               /* set_colours */
 
+typedef BOOL (WINAPI *PGetCurrentConsoleFontEx)(HANDLE, BOOL, CONSOLE_FONT_INFOEX*);
+
 int check_font_char( int c )
 {
-   HWND handle = GetConsoleWindow();
-   HDC dc = GetDC(handle);
-   HGDIOBJ of;
-   LOGFONT lf;
-   CONSOLE_FONT_INFOEX font;
-   int size;
-   int supported = 0;
-
-   font.cbSize = sizeof(CONSOLE_FONT_INFOEX);
-   GetCurrentConsoleFontEx(GetStdHandle (STD_OUTPUT_HANDLE), 0, &font);
-
-   memset(&lf, 0, sizeof(lf));
-   lf.lfHeight = font.dwFontSize.Y;
-   wcscpy(lf.lfFaceName, font.FaceName);
-
-   of = SelectObject(dc, CreateFontIndirect (&lf));
-   size = GetFontUnicodeRanges(dc, NULL);
-
-   if (size)
-   {
-      GLYPHSET* set = (GLYPHSET*)malloc(size);
-      int x;
-
-      if (GetFontUnicodeRanges(dc, set))
-      {
-         for (x = 0; x < set->cRanges; x++)
-         {
-            if (c >= set->ranges[x].wcLow &&
-                c < (set->ranges[x].wcLow + set->ranges[x].cGlyphs))
-            {
-               supported = 1;
-               break;
-            }
-         }
-      }
-      free(set);
+#if _WIN32_WINNT >= 0x0600
+   static int init = 0;
+   static PGetCurrentConsoleFontEx pGetCurrentConsoleFontEx;
+   if (!init) {
+      pGetCurrentConsoleFontEx = (PGetCurrentConsoleFontEx)
+         GetProcAddress(GetModuleHandleA("kernel32.dll"), "GetCurrentConsoleFontEx");
+      init = 1;
    }
 
-   DeleteObject(SelectObject(dc, of));
-   ReleaseDC(handle, dc);
+   if(pGetCurrentConsoleFontEx)
+   {
+      HWND handle = GetConsoleWindow();
+      HDC dc = GetDC(handle);
+      HGDIOBJ of;
+      LOGFONT lf;
+      CONSOLE_FONT_INFOEX font;
+      int size;
+      int supported = 0;
 
-   return supported;
+      font.cbSize = sizeof(CONSOLE_FONT_INFOEX);
+      pGetCurrentConsoleFontEx(GetStdHandle (STD_OUTPUT_HANDLE), 0, &font);
+
+      memset(&lf, 0, sizeof(lf));
+      lf.lfHeight = font.dwFontSize.Y;
+      wcscpy(lf.lfFaceName, font.FaceName);
+
+      of = SelectObject(dc, CreateFontIndirect (&lf));
+      size = GetFontUnicodeRanges(dc, NULL);
+
+      if (size)
+      {
+         GLYPHSET* set = (GLYPHSET*)malloc(size);
+         int x;
+
+         if (GetFontUnicodeRanges(dc, set))
+         {
+            for (x = 0; x < set->cRanges; x++)
+            {
+               if (c >= set->ranges[x].wcLow &&
+                   c < (set->ranges[x].wcLow + set->ranges[x].cGlyphs))
+               {
+                  supported = 1;
+                  break;
+               }
+            }
+         }
+         free(set);
+      }
+
+      DeleteObject(SelectObject(dc, of));
+      ReleaseDC(handle, dc);
+
+      return supported;
+   }
+#endif
+
+   return 1;
 }
 
