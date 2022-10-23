@@ -577,12 +577,12 @@ int main( int argc, char **argv )
    if ( ( status & GOT_ALL ) != GOT_ALL )
    {
       printf( "\n*** Missing chunks:" );
-      if ( !( status & 0x01 ) )
+      if ( !( status & GOT_HEADER ) )
          printf( " IFhd" );
-      if ( !( status & 0x02 ) )
-         printf( " Stks" );
-      if ( !( status & 0x04 ) )
+      if ( !( status & GOT_MEMORY ) )
          printf( " CMem/UMem" );
+      if ( !( status & GOT_STACKS ) )
+         printf( " Stks" );
       printf( "\n" );
       i = EXIT_FAILURE;
    }
